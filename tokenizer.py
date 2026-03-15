@@ -279,9 +279,15 @@ def _configure_root_logger() -> None:
     Unicode box-drawing or arrow characters. We explicitly set the
     stream handler to use UTF-8 with error replacement so logging
     never crashes, regardless of the OS locale.
+
+    FIX: Clear existing handlers first to prevent duplicate log lines
+    when transformers/torch also register handlers at import time.
     """
     import io
     root = logging.getLogger()
+    # Clear any handlers already added by imported libraries
+    if root.handlers:
+        root.handlers.clear()
     root.setLevel(logging.INFO)
     fmt = logging.Formatter(
         "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -353,14 +359,19 @@ class RVQConfig:
     n_codebooks=8 matches EnCodec 24 kHz [1].
     codebook_size=1024 follows SoundStream [2].
     EMA updates (ema_decay=0.99) stabilise training [14].
+
+    FIX (CPU/small-batch): commitment_cost raised to 1.0 (from 0.25) to
+    push encoder representations harder toward populated codebook entries.
+    threshold_ema_dead_code lowered to 1.0 (from 2.0) for more aggressive
+    dead-code recycling, which is critical with batch_size=2.
     """
     n_codebooks: int = 8
     codebook_size: int = 1024
     codebook_dim: int = 128
-    commitment_cost: float = 0.25
+    commitment_cost: float = 1.0        # FIX: was 0.25 — raised to combat collapse
     ema_decay: float = 0.99
     ema_epsilon: float = 1e-5
-    threshold_ema_dead_code: float = 2.0
+    threshold_ema_dead_code: float = 1.0  # FIX: was 2.0 — lower = more aggressive reset
 
 
 @dataclass
@@ -406,8 +417,8 @@ class TrainingConfig:
     checkpoint_dir: str = "./checkpoints"
     log_dir: str = "./logs"
     data_dir: str = "./data"
-    plot_dir: str = "./plots"        # NEW: output directory for training plots
-    output_dir: str = "./outputs"    # NEW: output directory for audio samples
+    plot_dir: str = "./plots"
+    output_dir: str = "./outputs"
 
     # Audio
     max_duration: float = 5.0
@@ -438,8 +449,8 @@ class TrainingConfig:
     save_every_steps: int = 5_000
     eval_every_steps: int = 1_000
     keep_last_n_checkpoints: int = 5
-    plot_every_steps: int = 500       # NEW: generate plots every N steps
-    sample_every_steps: int = 2_000   # NEW: save audio samples every N steps
+    plot_every_steps: int = 500
+    sample_every_steps: int = 2_000
 
     # Distributed
     ddp_backend: str = "nccl"
@@ -707,6 +718,11 @@ class VectorQuantizerEMA(nn.Module):
     Dead-code reset [15]: codes used < threshold_ema_dead_code times per
     batch are re-initialised from a random live input vector.
     Straight-through estimator [3] allows gradient flow through argmin.
+
+    FIX: Codebook initialised with normal distribution (std = 1/sqrt(dim))
+    instead of uniform(-1/K, 1/K). Normal init spreads codes more evenly
+    across the hypersphere, dramatically reducing early collapse with
+    small batches on CPU.
     """
 
     def __init__(self, cfg: RVQConfig) -> None:
@@ -722,7 +738,8 @@ class VectorQuantizerEMA(nn.Module):
         self.register_buffer("cluster_size", torch.zeros(cfg.codebook_size))
         self.register_buffer("embed_avg",    torch.empty(cfg.codebook_size, cfg.codebook_dim))
 
-        nn.init.uniform_(self.embedding, -1.0 / cfg.codebook_size, 1.0 / cfg.codebook_size)
+        # FIX: normal init instead of uniform — better hypersphere coverage
+        nn.init.normal_(self.embedding, mean=0.0, std=1.0 / math.sqrt(cfg.codebook_dim))
         self.embed_avg.data.copy_(self.embedding.data)
 
     def _distances(self, flat_z: torch.Tensor) -> torch.Tensor:
@@ -796,6 +813,11 @@ class ResidualVectorQuantizer(nn.Module):
 
     First codebook captures coarse semantics (distilled from W2V-BERT [5,6]).
     Subsequent codebooks refine acoustic detail — mirrors VALL-E [4].
+
+    FIX: Small Gaussian jitter (std=1e-3) added to encoder output during
+    training. This breaks the symmetry that causes multiple frames to
+    collapse onto the same code, which is especially severe with small
+    batches on CPU where the EMA update sees very few distinct inputs.
     """
 
     def __init__(self, rvq_cfg: RVQConfig, model_cfg: ModelConfig) -> None:
@@ -819,6 +841,13 @@ class ResidualVectorQuantizer(nn.Module):
         w2v_targets: Optional[torch.Tensor] = None,
     ) -> Dict[str, torch.Tensor]:
         z_proj  = self.input_proj(z)
+
+        # FIX: add tiny jitter during training to break quantisation symmetry.
+        # This ensures different frames land on different codes, increasing
+        # codebook diversity even with batch_size=2 on CPU.
+        if self.training:
+            z_proj = z_proj + torch.randn_like(z_proj) * 1e-3
+
         residual = z_proj
         z_q_total = torch.zeros_like(z_proj)
         all_codes = []
@@ -1193,7 +1222,7 @@ class CodebookMonitor:
 
 
 # =============================================================================
-# TRAINING METRICS TRACKER  (NEW)
+# TRAINING METRICS TRACKER
 # =============================================================================
 
 class MetricsTracker:
@@ -1221,7 +1250,6 @@ class MetricsTracker:
         keys = sorted(self.history.keys())
         if not keys:
             return
-        # Find all unique steps
         all_steps = sorted(set(s for k in keys for s, _ in self.history[k]))
         rows = [["step"] + keys]
         lookup = {k: dict(self.history[k]) for k in keys}
@@ -1235,7 +1263,7 @@ class MetricsTracker:
 
 
 # =============================================================================
-# PLOT UTILITIES  (NEW)
+# PLOT UTILITIES
 # =============================================================================
 
 def plot_training_curves(
@@ -1330,7 +1358,6 @@ def plot_training_curves(
         plot_dir / f"training_curves_step{step:08d}.png",
         dpi=150, bbox_inches="tight", facecolor="#0d1117",
     )
-    # Always overwrite a "latest" copy for easy monitoring
     plt.savefig(
         plot_dir / "training_curves_latest.png",
         dpi=150, bbox_inches="tight", facecolor="#0d1117",
@@ -1788,7 +1815,7 @@ def cleanup_distributed() -> None:
 
 
 # =============================================================================
-# AUDIO OUTPUT UTILITIES  (NEW)
+# AUDIO OUTPUT UTILITIES
 # =============================================================================
 
 def save_audio_sample(
@@ -2372,7 +2399,7 @@ def _load_model_from_checkpoint(
 
 
 # =============================================================================
-# QUICK SMOKE-TEST  (new — verifies the model runs end-to-end)
+# QUICK SMOKE-TEST
 # =============================================================================
 
 def smoke_test(device_str: str = "auto") -> None:
@@ -2535,16 +2562,21 @@ class _Preset:
 
 
 _PRESETS: Dict[str, _Preset] = {
-    # ── cpu ── tiny model that actually trains in minutes per epoch on 4 CPU cores
+    # ── cpu ──
+    # FIX: codebook_size reduced from 256 → 128.
+    # With batch_size=2 and 2s clips you have ~833 frames per batch.
+    # 256 codes requires each code to be used ~3x per batch on average to
+    # avoid dead-code reset; 128 codes halves that pressure and dramatically
+    # reduces collapse without hurting reconstruction quality at this scale.
     "cpu": _Preset(
         encoder_channels=64,  decoder_channels=64,
         disc_channels=16,     disc_depth=2,
-        n_codebooks=4,        codebook_size=256,
+        n_codebooks=4,        codebook_size=128,   # FIX: was 256
         batch_size=2,         disc_start_step=200,
         save_every=100,       eval_every=50,
         plot_every=50,        sample_every=100,
         max_duration=2.0,
-        label="CPU-tiny (64ch, 4 codebooks, batch=2)",
+        label="CPU-tiny (64ch, 4 codebooks x128, batch=2)",
     ),
     # ── gpu-small ── fits in ~8 GB VRAM; good for RTX 3060 / T4
     "gpu-small": _Preset(
