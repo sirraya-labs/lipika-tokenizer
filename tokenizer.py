@@ -1886,7 +1886,7 @@ def train(
     # Log hardware info once
     if rank == 0:
         logger.info(f"{'='*70}")
-        logger.info(f"  Lipika Tokenizer - Production Training")
+        logger.info(f"  Lipika Tokenizer - Training")
         logger.info(f"  Device  : {device_info(device)}")
         logger.info(f"  AMP     : {use_amp}  |  Distributed: {is_distributed} ({world_size} GPUs)")
         logger.info(f"  Batch   : {train_cfg.batch_size} x {train_cfg.grad_accum_steps} (accum)")
