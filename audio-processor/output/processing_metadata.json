@@ -17,14 +17,14 @@
       1,
       768
     ],
-    "processing_time": 18.984880924224854,
+    "processing_time": 21.53378200531006,
     "error_message": null,
     "metadata": {
       "original_file": "speech_hindi.wav",
       "file_size": 759362,
       "sample_rate": 24000,
       "model_size": "base",
-      "timestamp": "2026-03-16T15:15:40.676262",
+      "timestamp": "2026-03-16T15:24:32.743816",
       "original_sr": 48000,
       "original_channels": 1,
       "original_duration": 7.9095625,

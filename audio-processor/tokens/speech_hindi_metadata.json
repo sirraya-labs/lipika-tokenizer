@@ -1,0 +1,16 @@
+{
+  "file": "speech_hindi.wav",
+  "file_size": 759362,
+  "original_duration": 7.9095625,
+  "original_sample_rate": 48000,
+  "processed_duration": 5.0,
+  "processed_sample_rate": 24000,
+  "frames": 1501,
+  "codebooks": 8,
+  "codebook_size": 1024,
+  "total_tokens": 12008,
+  "vq_loss": 0.6131373047828674,
+  "processing_time": 19.999847,
+  "timestamp": "2026-03-16T18:09:48.179206",
+  "device": "cpu"
+}
