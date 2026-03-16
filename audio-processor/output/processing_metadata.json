@@ -1,0 +1,34 @@
+[
+  {
+    "file_path": "speech_hindi.wav",
+    "success": true,
+    "duration": 5.0,
+    "waveform_shape": [
+      1,
+      1,
+      120000
+    ],
+    "embeddings_shape": [
+      1,
+      1501,
+      768
+    ],
+    "pooled_shape": [
+      1,
+      768
+    ],
+    "processing_time": 18.984880924224854,
+    "error_message": null,
+    "metadata": {
+      "original_file": "speech_hindi.wav",
+      "file_size": 759362,
+      "sample_rate": 24000,
+      "model_size": "base",
+      "timestamp": "2026-03-16T15:15:40.676262",
+      "original_sr": 48000,
+      "original_channels": 1,
+      "original_duration": 7.9095625,
+      "original_format": "WAV"
+    }
+  }
+]

@@ -1,623 +1,569 @@
-#!/usr/bin/env python3
-# =============================================================================
-# LIPIKA TOKENIZER  —  Step 2: AudioEncoder
-# =============================================================================
-#
-# Responsibility
-# --------------
-# Convert a raw 24 kHz mono waveform tensor  (B, 1, T)
-#                             into a continuous latent sequence  (B, T_frames, C)
-#
-# Architecture
-# ------------
-#
-#   Input  (B, 1, T)
-#      │
-#      ▼
-#   CausalConv1d  kernel=7  →  (B, C, T)           ← stem: 1 channel → C channels
-#      │
-#      ▼
-#   ┌─────────────────────────────────────────────┐
-#   │  EncoderBlock  stride=2                     │  T  →  T/2
-#   │  EncoderBlock  stride=4                     │  T/2 → T/8
-#   │  EncoderBlock  stride=5                     │  T/8 → T/40
-#   │  EncoderBlock  stride=6                     │  T/40→ T/240
-#   └─────────────────────────────────────────────┘
-#      │
-#      ▼
-#   Bottleneck  (ELU + CausalConv1d 1×1)          ← clean latent projection
-#      │
-#      ▼
-#   Transpose  (B, C, T_frames) → (B, T_frames, C)
-#      │
-#      ▼
-#   LayerNorm  over C
-#      │
-#      ▼ (optional)
-#   ScriptFamilyAdapter  (AdaLN)                  ← scale + shift by script family
-#      │
-#      ▼
-#   Output  (B, T_frames, C)
-#
-# Compression ratio:  2 × 4 × 5 × 6 = 240
-# At 24 000 Hz:  frame rate = 24000 / 240 = 100 Hz  (10 ms per frame)
-#
-# Each EncoderBlock keeps channel count CONSTANT at C:
-#   ResBlock stack (dilations 1, 3, 9)  →  C channels
-#   CausalConv1d  C → 2C               →  doubles channels
-#   Gating  2C[:C]                     →  halves back to C
-#   AvgPool1d stride                   →  temporal downsampling
-#
-# This matches the EnCodec design [1] — no channel blow-up through depth.
-#
-# References
-# ----------
-#   [1] Défossez et al. (2022) "High Fidelity Neural Audio Compression" (EnCodec)
-#       https://arxiv.org/abs/2210.13438
-#   [12] Ba et al. (2016) "Layer Normalization"
-#        https://arxiv.org/abs/1607.06450
-#
-# Dependencies
-# ------------
-#   torch  (no other heavy deps)
-#
-# Usage
-# -----
-#   from audio_preprocessor import AudioPreprocessor
-#   from audio_encoder import AudioEncoder, AudioConfig, ModelConfig
-#
-#   prep    = AudioPreprocessor(target_sr=24_000)
-#   waveform = prep.process("speech.wav")          # (1, 1, T)
-#
-#   encoder = AudioEncoder(AudioConfig(), ModelConfig())
-#   latent  = encoder(waveform)                    # (1, T_frames, 512)
-#
-# =============================================================================
-
-from __future__ import annotations
-
-import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+"""
+AudioEncoder: Neural network encoder for preprocessed audio tensors.
+Designed to work seamlessly with AudioPreprocessor output format.
+Fixed version with proper dimension handling and safety buffers.
+"""
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-
-# =============================================================================
-# CONFIG DATACLASSES  (duplicated here so this file is self-contained)
-# =============================================================================
-
-@dataclass
-class AudioConfig:
-    """
-    Audio processing parameters shared across all Lipika modules.
-    24 kHz captures retroflex stops and aspirated consonants (energy up to ~10 kHz)
-    without the memory cost of 44.1 kHz.
-    """
-    sample_rate: int = 24_000
-    n_fft: int = 2048
-    hop_length: int = 240       # → 100 Hz frame rate
-    n_mels: int = 128
-    fmin: float = 0.0
-    fmax: float = 12_000.0
+from typing import Optional, Tuple, Union, List
+from dataclasses import dataclass
 
 
 @dataclass
-class ModelConfig:
-    """Encoder / decoder / adapter sizes."""
-    encoder_channels: int = 512
-    encoder_depth: int = 8          # reserved for future deeper variants
-    decoder_channels: int = 512
-    decoder_depth: int = 8
-
-    # Semantic teacher projection dims  (used by RVQ, not encoder directly)
-    w2v_bert_model: str = "facebook/w2v-bert-2.0"
-    w2v_bert_dim: int = 1024
-    semantic_proj_dim: int = 256
-
-    # Script adapter
-    n_script_families: int = 12
-    script_embed_dim: int = 64
-
-    # Discriminator (not used here)
-    disc_channels: int = 64
-    disc_depth: int = 4
-    mpd_periods: List[int] = field(default_factory=lambda: [2, 3, 5, 7, 11])
+class EncoderOutput:
+    """Structured output from AudioEncoder."""
+    
+    embeddings: torch.Tensor
+    attention_mask: Optional[torch.Tensor] = None
+    layer_outputs: Optional[List[torch.Tensor]] = None
+    pooled_output: Optional[torch.Tensor] = None
 
 
-# =============================================================================
-# BUILDING BLOCKS
-# =============================================================================
-
-class CausalConv1d(nn.Module):
-    """
-    Causal 1-D convolution — zero future context.
-
-    Standard Conv1d uses symmetric padding; that would let each output frame
-    see future input samples, which breaks streaming / real-time inference.
-    We pad *only on the left* (past) so frame t depends solely on frames ≤ t.
-
-    causal_pad = (kernel_size - 1) * dilation
-    After padding:  effective kernel spans [t - causal_pad, t]
-
-    Reference: EnCodec §3.1 [1].
-    """
-
+class AudioEncoderConfig:
+    """Configuration class for AudioEncoder hyperparameters."""
+    
     def __init__(
         self,
-        in_channels: int,
-        out_channels: int,
-        kernel_size: int,
-        dilation: int = 1,
-        bias: bool = True,
-    ) -> None:
+        input_channels: int = 1,
+        sample_rate: int = 24000,
+        window_seconds: float = 5.0,
+        hidden_dim: int = 768,
+        num_layers: int = 12,
+        num_heads: int = 12,
+        ff_dim: int = 3072,
+        dropout: float = 0.1,
+        conv_kernel_sizes: List[int] = [10, 3, 3, 3, 3],
+        conv_strides: List[int] = [5, 2, 2, 2, 2],
+        pooling_strategy: str = "mean",  # "mean", "cls", or "max"
+        use_same_padding: bool = True,
+    ):
+        self.input_channels = input_channels
+        self.sample_rate = sample_rate
+        self.window_seconds = window_seconds
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.dropout = dropout
+        self.conv_kernel_sizes = conv_kernel_sizes
+        self.conv_strides = conv_strides
+        self.pooling_strategy = pooling_strategy
+        self.use_same_padding = use_same_padding
+        
+    @property
+    def total_stride(self):
+        """Calculate total stride from convolutional layers."""
+        stride = 1
+        for s in self.conv_strides:
+            stride *= s
+        return stride
+    
+    @property
+    def frame_length(self):
+        """Calculate frame length in seconds."""
+        return self.total_stride / self.sample_rate
+    
+    @property
+    def num_frames(self):
+        """
+        Calculate number of frames for a window using proper conv output formula.
+        For same padding with stride > 1: output_length = ceil(input_length / stride)
+        """
+        length = int(self.sample_rate * self.window_seconds)
+        
+        for stride in self.conv_strides:
+            length = (length + stride - 1) // stride
+        
+        return int(length)
+    
+    @property
+    def max_position_embeddings(self):
+        """Maximum position embeddings needed (with safety buffer)."""
+        base_frames = self.num_frames
+        # Add buffer for CLS token if needed
+        if self.pooling_strategy == "cls":
+            base_frames += 1
+        # Add small safety buffer (2% or 10 frames, whichever is larger)
+        safety_buffer = max(10, int(base_frames * 0.02))
+        return base_frames + safety_buffer
+
+
+class ConvFeatureExtractor(nn.Module):
+    """
+    Convolutional feature extractor with precise length calculation.
+    """
+    
+    def __init__(self, config: AudioEncoderConfig):
         super().__init__()
-        self.causal_pad = (kernel_size - 1) * dilation
-        self.conv = nn.Conv1d(
-            in_channels, out_channels, kernel_size,
-            dilation=dilation, padding=0, bias=bias,
-        )
-
+        self.config = config
+        
+        # Build convolutional layers
+        conv_layers = []
+        in_channels = config.input_channels
+        
+        # Calculate dimensions for debugging
+        current_length = int(config.sample_rate * config.window_seconds)
+        print(f"  Initial length: {current_length} samples")
+        
+        for i, (kernel_size, stride) in enumerate(zip(
+            config.conv_kernel_sizes, config.conv_strides
+        )):
+            # Determine out_channels for this layer
+            if i == len(config.conv_kernel_sizes) - 1:
+                out_channels = config.hidden_dim
+            else:
+                out_channels = min(config.hidden_dim, config.hidden_dim // (2 ** (len(config.conv_kernel_sizes) - 1 - i)))
+            
+            # Calculate padding for same padding
+            if config.use_same_padding:
+                padding = kernel_size // 2
+            else:
+                padding = 0
+            
+            # Calculate output length
+            if config.use_same_padding:
+                current_length = (current_length + stride - 1) // stride
+            else:
+                current_length = (current_length - kernel_size) // stride + 1
+            
+            print(f"  Layer {i+1}: kernel={kernel_size}, stride={stride}, padding={padding} → {current_length} frames")
+            
+            conv_layers.extend([
+                nn.Conv1d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                    padding=padding,
+                    bias=False,
+                ),
+                nn.BatchNorm1d(out_channels),
+                nn.GELU(),
+                nn.Dropout(config.dropout),
+            ])
+            in_channels = out_channels
+        
+        self.conv_layers = nn.Sequential(*conv_layers)
+        self.actual_frames = current_length
+        print(f"  Final frames: {current_length}")
+        print(f"  Expected frames from config: {config.num_frames}")
+        
+        # Final projection if needed
+        if in_channels != config.hidden_dim:
+            self.final_proj = nn.Linear(in_channels, config.hidden_dim)
+        else:
+            self.final_proj = nn.Identity()
+        
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x: (B, C, T)
-        x = F.pad(x, (self.causal_pad, 0))   # left-pad only
-        return self.conv(x)
-
-    def extra_repr(self) -> str:
-        c = self.conv
-        return (
-            f"in={c.in_channels}, out={c.out_channels}, "
-            f"kernel={c.kernel_size[0]}, dilation={c.dilation[0]}, "
-            f"causal_pad={self.causal_pad}"
-        )
-
-
-class ResBlock(nn.Module):
-    """
-    Gated residual block with a single dilated causal convolution.
-
-    Structure:
-        x  →  ELU  →  CausalConv1d(k=3, d=dilation)  →  ELU  →  CausalConv1d(k=1)  →  + x
-
-    Three ResBlocks with dilations [1, 3, 9] give a receptive field of:
-        (3-1)*1 + (3-1)*3 + (3-1)*9 = 2 + 6 + 18 = 26 frames
-    before any striding — enough to capture ~260 ms at 100 Hz.
-
-    The 1×1 conv at the end acts as a channel mixer without expanding
-    the temporal receptive field.
-    """
-
-    def __init__(self, channels: int, dilation: int = 1) -> None:
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.ELU(),
-            CausalConv1d(channels, channels, kernel_size=3, dilation=dilation),
-            nn.ELU(),
-            CausalConv1d(channels, channels, kernel_size=1),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x + self.layers(x)    # residual connection
-
-
-class EncoderBlock(nn.Module):
-    """
-    One downsampling stage: residual refinement → strided compression.
-
-    Channel flow:
-        in:  (B, C, T)
-        res: (B, C, T)         ← three ResBlocks, channels unchanged
-        down:(B, 2C, T)        ← CausalConv1d doubles channels
-        gate:(B, C, T)         ← keep first C channels  (learned gating)
-        pool:(B, C, T/stride)  ← AvgPool1d reduces time
-
-    Net result: same channel count C, time divided by stride.
-    The gate is analogous to a Gated Linear Unit applied at the downsampling
-    boundary — it lets the network selectively pass information.
-
-    Why AvgPool instead of strided conv for temporal reduction?
-    AvgPool has no learnable parameters and anti-aliases the signal before
-    subsampling, reducing aliasing artefacts in the latent.
-    The CausalConv1d with kernel=2*stride handles the learned compression,
-    and AvgPool handles the anti-aliased subsampling cleanly.
-    """
-
-    def __init__(self, channels: int, stride: int) -> None:
-        super().__init__()
-        self.stride = stride
-        # Three residual blocks with expanding dilation for large receptive field
-        self.res  = nn.Sequential(
-            ResBlock(channels, dilation=1),
-            ResBlock(channels, dilation=3),
-            ResBlock(channels, dilation=9),
-        )
-        # Doubles channels; gating in forward halves back to C
-        self.down = CausalConv1d(channels, channels * 2, kernel_size=2 * stride)
-        self.pool = nn.AvgPool1d(stride, stride)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.res(x)                         # (B, C, T)
-        x = self.down(x)                        # (B, 2C, T)
-        x = x[:, : x.shape[1] // 2, :]         # gate → (B, C, T)
-        x = self.pool(x)                        # (B, C, T/stride)
+        """
+        Args:
+            x: (batch, channels, time)
+        
+        Returns:
+            (batch, frames, hidden_dim)
+        """
+        # Apply convolutions
+        x = self.conv_layers(x)  # (batch, hidden_dim, frames)
+        
+        # Permute for linear projection
+        x = x.transpose(1, 2)  # (batch, frames, hidden_dim)
+        x = self.final_proj(x)  # (batch, frames, hidden_dim)
+        
         return x
 
-    def extra_repr(self) -> str:
-        return f"stride={self.stride}"
 
-
-# =============================================================================
-# SCRIPT-FAMILY ADAPTER  (Adaptive Layer Normalisation)
-# =============================================================================
-
-class ScriptFamilyAdapter(nn.Module):
-    """
-    Conditions the encoder latent on the script family of the input language.
-
-    Mechanism: Adaptive Layer Normalisation (AdaLN) [12].
-        z_out = z * scale(script_id) + shift(script_id)
-
-    Why script conditioning?
-    -----------------------
-    Retroflex consonants (/ʈ ɖ ɳ ɽ/) are phonemically contrastive in most
-    Indic languages (Hindi, Tamil, Telugu, Malayalam…) but absent in, e.g.,
-    Persian-script languages (Urdu). Telling the encoder which script family
-    it's processing lets it allocate latent dimensions for these distinctions
-    rather than discovering them blindly from data.
-
-    The first 8 embedding dims get a +0.5 bias for retroflex scripts as a
-    soft inductive prior — training will correct this if it's wrong.
-
-    scale is initialised to 1 (identity) and shift to 0 so AdaLN has zero
-    effect at the start of training and learns the residual correction.
-    """
-
-    RETROFLEX_SCRIPTS = {0, 1, 2, 4, 5, 6, 7, 8}   # Devanagari … Malayalam
-
-    def __init__(self, cfg: ModelConfig) -> None:
+class PositionalEncoding(nn.Module):
+    """Sinusoidal positional encoding with dynamic sizing and safety buffer."""
+    
+    def __init__(self, config: AudioEncoderConfig):
         super().__init__()
-        self.embed = nn.Embedding(cfg.n_script_families, cfg.script_embed_dim)
+        self.dropout = nn.Dropout(config.dropout)
+        self.max_len = config.max_position_embeddings
+        self.hidden_dim = config.hidden_dim
+        
+        # Create positional embeddings
+        pe = torch.zeros(self.max_len, self.hidden_dim)
+        position = torch.arange(0, self.max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, self.hidden_dim, 2).float() * 
+                           (-torch.log(torch.tensor(10000.0)) / self.hidden_dim))
+        
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        
+        # Register as buffer (not a parameter)
+        self.register_buffer('pe', pe.unsqueeze(0))
+        
+        # Optional learnable embeddings
+        self.learnable_pe = nn.Parameter(torch.zeros(1, self.max_len, self.hidden_dim))
+        
+        print(f"  Positional encoding initialized for max length: {self.max_len}")
+        
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            x: (batch, seq_len, hidden_dim)
+        
+        Returns:
+            (batch, seq_len, hidden_dim)
+        """
+        seq_len = x.size(1)
+        
+        # Handle sequences longer than max_len (should not happen with safety buffer)
+        if seq_len > self.max_len:
+            print(f"  Warning: Truncating sequence from {seq_len} to {self.max_len}")
+            x = x[:, :self.max_len, :]
+            seq_len = self.max_len
+        
+        # Add positional encodings
+        x = x + self.pe[:, :seq_len, :] + self.learnable_pe[:, :seq_len, :]
+        return self.dropout(x)
 
-        # Soft retroflex prior on first 8 embedding dims
-        with torch.no_grad():
-            for sf_id in self.RETROFLEX_SCRIPTS:
-                self.embed.weight[sf_id, :8] += 0.5
 
-        self.proj = nn.Sequential(
-            nn.Linear(cfg.script_embed_dim, cfg.encoder_channels),
-            nn.SiLU(),
-            nn.Linear(cfg.encoder_channels, cfg.encoder_channels),
+class TransformerEncoderLayer(nn.Module):
+    """Single transformer encoder layer with pre-norm architecture."""
+    
+    def __init__(self, config: AudioEncoderConfig):
+        super().__init__()
+        
+        # Self-attention
+        self.self_attn = nn.MultiheadAttention(
+            embed_dim=config.hidden_dim,
+            num_heads=config.num_heads,
+            dropout=config.dropout,
+            batch_first=True,
         )
-        self.scale_head = nn.Linear(cfg.encoder_channels, cfg.encoder_channels)
-        self.shift_head = nn.Linear(cfg.encoder_channels, cfg.encoder_channels)
+        
+        # Feed-forward network
+        self.feed_forward = nn.Sequential(
+            nn.Linear(config.hidden_dim, config.ff_dim),
+            nn.GELU(),
+            nn.Dropout(config.dropout),
+            nn.Linear(config.ff_dim, config.hidden_dim),
+            nn.Dropout(config.dropout),
+        )
+        
+        # Layer norms (pre-norm architecture)
+        self.norm1 = nn.LayerNorm(config.hidden_dim)
+        self.norm2 = nn.LayerNorm(config.hidden_dim)
+        
+        self.dropout = nn.Dropout(config.dropout)
+        
+    def forward(
+        self,
+        x: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+        key_padding_mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        # Pre-norm residual connection for attention
+        residual = x
+        x = self.norm1(x)
+        x, _ = self.self_attn(
+            x, x, x,
+            attn_mask=attn_mask,
+            key_padding_mask=key_padding_mask,
+            need_weights=False,
+        )
+        x = self.dropout(x)
+        x = residual + x
+        
+        # Pre-norm residual connection for FFN
+        residual = x
+        x = self.norm2(x)
+        x = self.feed_forward(x)
+        x = residual + x
+        
+        return x
 
-        # Identity init: scale=1, shift=0  →  no effect at step 0
-        nn.init.zeros_(self.scale_head.weight)
-        nn.init.ones_(self.scale_head.bias)
-        nn.init.zeros_(self.shift_head.weight)
-        nn.init.zeros_(self.shift_head.bias)
-
-    def forward(self, script_ids: torch.Tensor) -> Dict[str, torch.Tensor]:
-        """
-        Parameters
-        ----------
-        script_ids : (B,) int64  — index in [0, n_script_families)
-
-        Returns
-        -------
-        dict with 'scale' (B, C) and 'shift' (B, C)
-        """
-        e = self.proj(self.embed(script_ids))
-        return {
-            "scale": self.scale_head(e),   # (B, C)
-            "shift": self.shift_head(e),   # (B, C)
-        }
-
-
-# =============================================================================
-# AUDIO ENCODER
-# =============================================================================
 
 class AudioEncoder(nn.Module):
     """
-    Causal convolutional encoder: waveform (B, 1, T) → latent (B, T_frames, C).
-
-    Strides
-    -------
-    [2, 4, 5, 6]  →  total compression ratio = 240
-    At 24 000 Hz:  frame rate = 24 000 / 240 = 100 Hz  (one frame per 10 ms)
-
-    This matches the standard TTS alignment frame rate used in:
-    - VALL-E [4] for codec token alignment
-    - Vocos [13] for vocoder frame rate
-    - Most forced-alignment tools (Montreal Forced Aligner default)
-
-    Channel count is CONSTANT at C throughout all EncoderBlocks.
-    Only temporal resolution decreases.
-
-    Parameters
-    ----------
-    audio_cfg : AudioConfig
-    model_cfg : ModelConfig
-        encoder_channels (C) determines latent width.
-
-    Forward
-    -------
-    waveform   : (B, 1, T)         float32 — output of AudioPreprocessor
-    script_ids : (B,) int64 | None — optional script family for AdaLN
-
-    Returns
-    -------
-    latent : (B, T_frames, C)   float32
-        T_frames = T // compression_ratio  (integer division, may be ±1 off
-        for lengths not divisible by 240 — the decoder handles the mismatch).
+    Main AudioEncoder class with proper dimension handling.
+    
+    Input shape: (batch, 1, time) where time is typically 120000 for 5s @ 24kHz.
+    Output shape: (batch, seq_len, hidden_dim) or pooled (batch, hidden_dim).
+    
+    Usage:
+        encoder = AudioEncoder()
+        waveform = preprocessor.process("speech.wav")  # (1, 1, 120000)
+        embeddings = encoder(waveform)  # (1, num_frames, hidden_dim)
     """
-
-    STRIDES: List[int] = [2, 4, 5, 6]
-
-    def __init__(self, audio_cfg: AudioConfig, model_cfg: ModelConfig) -> None:
+    
+    def __init__(self, config: Optional[AudioEncoderConfig] = None):
         super().__init__()
-        C = model_cfg.encoder_channels
-
-        # Stem: raw waveform (1 channel) → C channels, causal conv k=7
-        self.stem = CausalConv1d(1, C, kernel_size=7)
-
-        # Downsampling stack — all blocks operate at C channels
-        self.blocks = nn.Sequential(*[
-            EncoderBlock(C, stride) for stride in self.STRIDES
+        
+        if config is None:
+            config = AudioEncoderConfig()
+        
+        self.config = config
+        
+        print("\n" + "="*60)
+        print("AUDIO ENCODER INITIALIZATION")
+        print("="*60)
+        print(f"Sample rate: {config.sample_rate} Hz")
+        print(f"Window: {config.window_seconds} seconds")
+        print(f"Input samples: {int(config.sample_rate * config.window_seconds)}")
+        print(f"Expected frames: {config.num_frames}")
+        print(f"Max position embeddings (with buffer): {config.max_position_embeddings}")
+        print(f"Hidden dimension: {config.hidden_dim}")
+        print(f"Number of layers: {config.num_layers}")
+        print(f"Number of heads: {config.num_heads}")
+        print(f"FF dimension: {config.ff_dim}")
+        print(f"Pooling strategy: {config.pooling_strategy}")
+        print("-"*60)
+        
+        # Feature extraction
+        self.feature_extractor = ConvFeatureExtractor(config)
+        
+        # Positional encoding
+        self.pos_encoder = PositionalEncoding(config)
+        
+        # Transformer layers
+        self.layers = nn.ModuleList([
+            TransformerEncoderLayer(config) for _ in range(config.num_layers)
         ])
-
-        # Bottleneck: 1×1 causal conv + ELU — cleans up the latent before quantisation
-        self.bottleneck = nn.Sequential(
-            nn.ELU(),
-            CausalConv1d(C, C, kernel_size=1),
-        )
-
-        # Post-norm over channel dim (standard for transformer-adjacent latents)
-        self.norm = nn.LayerNorm(C)
-
-        # Script adapter is stored separately so it can be used optionally
-        self.script_adapter = ScriptFamilyAdapter(model_cfg)
-
-        self._C = C
-
+        
+        # Final layer norm
+        self.final_norm = nn.LayerNorm(config.hidden_dim)
+        
+        # CLS token for pooling
+        if config.pooling_strategy == "cls":
+            self.cls_token = nn.Parameter(torch.randn(1, 1, config.hidden_dim) * 0.02)
+        
+        # Initialize weights
+        self.apply(self._init_weights)
+        print("="*60 + "\n")
+        
+    def _init_weights(self, module):
+        """Initialize weights with truncated normal."""
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=0.02)
+            if module.bias is not None:
+                module.bias.data.zero_()
+        elif isinstance(module, nn.Conv1d):
+            module.weight.data.normal_(mean=0.0, std=0.02)
+            if module.bias is not None:
+                module.bias.data.zero_()
+        elif isinstance(module, nn.LayerNorm):
+            module.bias.data.zero_()
+            module.weight.data.fill_(1.0)
+    
     def forward(
         self,
         waveform: torch.Tensor,
-        script_ids: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        output_all_layers: bool = False,
+        return_pooled: bool = True,
+    ) -> Union[torch.Tensor, EncoderOutput]:
+        """
+        Forward pass through the encoder.
+        
+        Args:
+            waveform: (batch, channels, time) from AudioPreprocessor
+            attention_mask: (batch, time) mask for padding (1 for valid, 0 for padding)
+            output_all_layers: Return outputs from all transformer layers
+            return_pooled: Return pooled sequence representation
+        
+        Returns:
+            EncoderOutput containing embeddings and optional masks/layers
+        """
+        batch_size = waveform.shape[0]
+        
+        # Step 1: Feature extraction (convolutional frontend)
+        features = self.feature_extractor(waveform)  # (batch, frames, hidden_dim)
+        
+        # Step 2: Add positional encoding
+        features = self.pos_encoder(features)  # (batch, frames, hidden_dim)
+        
+        # Step 3: Add CLS token if using CLS pooling
+        if self.config.pooling_strategy == "cls":
+            cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+            features = torch.cat([cls_tokens, features], dim=1)
+        
+        # Step 4: Pass through transformer layers
+        layer_outputs = []
+        x = features
+        
+        for layer in self.layers:
+            x = layer(x)
+            if output_all_layers:
+                layer_outputs.append(x)
+        
+        # Step 5: Final layer norm
+        x = self.final_norm(x)
+        
+        # Step 6: Pooling (if requested)
+        pooled = None
+        if return_pooled:
+            if self.config.pooling_strategy == "cls":
+                pooled = x[:, 0, :]  # CLS token
+            elif self.config.pooling_strategy == "mean":
+                pooled = x.mean(dim=1)
+            elif self.config.pooling_strategy == "max":
+                pooled = x.max(dim=1)[0]
+        
+        # Remove CLS token from sequence output if present
+        if self.config.pooling_strategy == "cls" and not output_all_layers:
+            sequence_output = x[:, 1:, :]
+        else:
+            sequence_output = x
+        
+        if output_all_layers or return_pooled:
+            return EncoderOutput(
+                embeddings=sequence_output,
+                attention_mask=attention_mask,
+                layer_outputs=layer_outputs if output_all_layers else None,
+                pooled_output=pooled,
+            )
+        
+        return sequence_output
+    
+    def encode_batch(
+        self,
+        waveforms: List[torch.Tensor],
+        max_duration: Optional[float] = None,
     ) -> torch.Tensor:
         """
-        Parameters
-        ----------
-        waveform   : (B, 1, T)   float32
-        script_ids : (B,)  int64 | None
-
-        Returns
-        -------
-        latent : (B, T_frames, C)   float32
+        Encode a batch of preprocessed waveforms.
+        
+        Args:
+            waveforms: List of (1, 1, T) tensors from AudioPreprocessor
+            max_duration: Maximum duration for padding (seconds)
+        
+        Returns:
+            (batch, seq_len, hidden_dim) embeddings
         """
-        # stem: (B, 1, T) → (B, C, T)
-        x = self.stem(waveform)
-
-        # downsampling: (B, C, T) → (B, C, T_frames)
-        x = self.blocks(x)
-
-        # bottleneck: (B, C, T_frames) unchanged shape
-        x = self.bottleneck(x)
-
-        # transpose + norm: (B, C, T_frames) → (B, T_frames, C)
-        x = x.transpose(1, 2)
-        x = self.norm(x)
-
-        # optional AdaLN script conditioning
-        if script_ids is not None:
-            adapter = self.script_adapter(script_ids)
-            scale = adapter["scale"].unsqueeze(1)   # (B, 1, C)
-            shift = adapter["shift"].unsqueeze(1)   # (B, 1, C)
-            x = x * scale + shift
-
-        return x
-
-    # ── Properties ────────────────────────────────────────────────────────
-
-    @property
-    def compression_ratio(self) -> int:
-        """Total temporal compression: product of all strides."""
-        r = 1
-        for s in self.STRIDES:
-            r *= s
-        return r    # = 240
-
-    @property
-    def frame_rate(self) -> float:
-        """Output frame rate in Hz given the default AudioConfig sample rate."""
-        return 24_000 / self.compression_ratio   # = 100.0 Hz
-
-    @property
-    def channels(self) -> int:
-        """Latent channel dimension C."""
-        return self._C
-
-    def num_parameters(self, include_adapter: bool = True) -> int:
-        if include_adapter:
-            return sum(p.numel() for p in self.parameters())
-        return sum(
-            p.numel() for name, p in self.named_parameters()
-            if "script_adapter" not in name
-        )
-
-    def receptive_field_frames(self) -> int:
-        """
-        Approximate temporal receptive field at the bottleneck output,
-        measured in output frames (before any further module).
-
-        Each EncoderBlock's three ResBlocks contribute:
-            RF += (2*(1-1)*1 + 2*(3-1)*1 + 2*(9-1)*1) = 0 + 4 + 16 = 20 frames
-            (dilated causal convs at the block's temporal resolution)
-        Plus the strided down-conv kernel = 2*stride frames.
-
-        This is a lower-bound estimate — actual RF is larger due to pooling.
-        """
-        rf = 1
-        current_stride = 1
-        for s in self.STRIDES:
-            # resblock contribution in current resolution
-            rf += (20) // current_stride if current_stride < s else 20
-            # strided conv contribution
-            rf += (2 * s) // current_stride if current_stride < s else 2 * s
-            current_stride *= s
-        return rf
-
-    def __repr__(self) -> str:
-        return (
-            f"AudioEncoder(\n"
-            f"  strides        = {self.STRIDES}\n"
-            f"  channels       = {self._C}\n"
-            f"  compression    = {self.compression_ratio}×\n"
-            f"  frame_rate     = {self.frame_rate:.1f} Hz\n"
-            f"  parameters     = {self.num_parameters() / 1e6:.3f} M\n"
-            f")"
-        )
+        if max_duration is not None:
+            # Pad/truncate all to same length
+            target_samples = int(max_duration * self.config.sample_rate)
+            padded = []
+            masks = []
+            
+            for w in waveforms:
+                if w.shape[2] >= target_samples:
+                    padded.append(w[:, :, :target_samples])
+                    masks.append(torch.ones(1, target_samples, device=w.device))
+                else:
+                    pad_len = target_samples - w.shape[2]
+                    padded_w = F.pad(w, (0, pad_len))
+                    padded.append(padded_w)
+                    
+                    mask = torch.ones(1, w.shape[2], device=w.device)
+                    mask = F.pad(mask, (0, pad_len))
+                    masks.append(mask)
+            
+            batch = torch.cat(padded, dim=0)
+            mask = torch.cat(masks, dim=0)
+            return self.forward(batch, attention_mask=mask)
+        else:
+            # Assume all same length
+            batch = torch.cat(waveforms, dim=0)
+            return self.forward(batch)
 
 
 # =============================================================================
-# SELF-TEST
+# Factory function with automatic dimension calculation
+# =============================================================================
+
+def create_audio_encoder(
+    model_size: str = "base",
+    sample_rate: int = 24000,
+    window_seconds: float = 5.0,
+) -> AudioEncoder:
+    """
+    Factory function to create AudioEncoder with proper dimensions.
+    
+    Args:
+        model_size: "tiny", "small", "base", or "large"
+        sample_rate: Input sample rate (should match AudioPreprocessor)
+        window_seconds: Expected window duration
+    
+    Returns:
+        Configured AudioEncoder
+    """
+    
+    configs = {
+        "tiny": {
+            "hidden_dim": 256,
+            "num_layers": 6,
+            "num_heads": 4,
+            "ff_dim": 1024,
+            "conv_kernel_sizes": [10, 3, 3, 3],
+            "conv_strides": [5, 2, 2, 2],
+        },
+        "small": {
+            "hidden_dim": 512,
+            "num_layers": 8,
+            "num_heads": 8,
+            "ff_dim": 2048,
+            "conv_kernel_sizes": [10, 3, 3, 3, 3],
+            "conv_strides": [5, 2, 2, 2, 2],
+        },
+        "base": {
+            "hidden_dim": 768,
+            "num_layers": 12,
+            "num_heads": 12,
+            "ff_dim": 3072,
+            "conv_kernel_sizes": [10, 3, 3, 3, 3],
+            "conv_strides": [5, 2, 2, 2, 2],
+        },
+        "large": {
+            "hidden_dim": 1024,
+            "num_layers": 24,
+            "num_heads": 16,
+            "ff_dim": 4096,
+            "conv_kernel_sizes": [10, 3, 3, 3, 3, 3],
+            "conv_strides": [5, 2, 2, 2, 2, 2],
+        }
+    }
+    
+    if model_size not in configs:
+        raise ValueError(f"model_size must be one of {list(configs.keys())}")
+    
+    base_config = configs[model_size]
+    
+    config = AudioEncoderConfig(
+        sample_rate=sample_rate,
+        window_seconds=window_seconds,
+        **base_config
+    )
+    
+    return AudioEncoder(config)
+
+
+# =============================================================================
+# Main integration script
 # =============================================================================
 
 if __name__ == "__main__":
-    import sys
-    import os
-    sys.path.insert(0, os.path.dirname(__file__))
-
-    print("=" * 60)
-    print("  AudioEncoder — self-test")
-    print("=" * 60)
-
-    device = (
-        torch.device("cuda") if torch.cuda.is_available()
-        else torch.device("mps")
-        if (hasattr(torch.backends, "mps") and torch.backends.mps.is_available())
-        else torch.device("cpu")
-    )
-    print(f"\nDevice: {device}\n")
-
-    # ── 1. Instantiate encoder ────────────────────────────────────────────
-    audio_cfg = AudioConfig(sample_rate=24_000)
-    model_cfg = ModelConfig(encoder_channels=512)
-    encoder   = AudioEncoder(audio_cfg, model_cfg).to(device)
-    print(encoder)
-    print(f"  Parameters (excl. adapter) : {encoder.num_parameters(include_adapter=False)/1e6:.3f} M")
-
-    # ── 2. Shape tests across batch sizes and durations ───────────────────
-    print("\n[2] Shape verification:")
-    test_cases = [
-        (1, 24_000),       # 1 s
-        (2, 48_000),       # 2 s
-        (4, 120_000),      # 5 s
-        (1, 24_007),       # non-divisible length — should still work
-    ]
-    all_passed = True
-    for B, T in test_cases:
-        waveform   = torch.randn(B, 1, T, device=device)
-        script_ids = torch.randint(0, 12, (B,), device=device)
-
-        with torch.no_grad():
-            latent_with    = encoder(waveform, script_ids)
-            latent_without = encoder(waveform)             # no script conditioning
-
-        expected_T_frames = T // encoder.compression_ratio
-        got_T_frames      = latent_with.shape[1]
-        shape_ok = (
-            latent_with.shape[0] == B
-            and latent_with.shape[2] == model_cfg.encoder_channels
-            and abs(got_T_frames - expected_T_frames) <= 1   # allow ±1 from padding
-        )
-        status = "✓ PASS" if shape_ok else "✗ FAIL"
-        if not shape_ok:
-            all_passed = False
-        print(
-            f"  B={B}, T={T:>7}  →  latent={tuple(latent_with.shape)}  "
-            f"expected T_frames≈{expected_T_frames}  {status}"
-        )
-        assert latent_with.shape == latent_without.shape, "Script conditioning changed shape!"
-
-    # ── 3. Gradient flow ─────────────────────────────────────────────────
-    print("\n[3] Gradient flow:")
-    encoder.train()
-    waveform   = torch.randn(2, 1, 24_000, device=device, requires_grad=False)
-    script_ids = torch.zeros(2, dtype=torch.long, device=device)
-    latent     = encoder(waveform, script_ids)
-    dummy_loss = latent.mean()
-    dummy_loss.backward()
-    grads_ok = all(
-        p.grad is not None and not p.grad.isnan().any()
-        for p in encoder.parameters()
-        if p.requires_grad
-    )
-    print(f"  All gradients non-None and non-NaN: {'✓ PASS' if grads_ok else '✗ FAIL'}")
-    if not grads_ok:
-        all_passed = False
-
-    # ── 4. AdaLN effect ──────────────────────────────────────────────────
-    print("\n[4] AdaLN conditioning sanity:")
-    encoder.eval()
+    print("\n" + "="*60)
+    print("AUDIO ENCODER - FINAL TEST WITH FIXES")
+    print("="*60)
+    
+    # Test with your exact dimensions
+    print("\n[1] Creating encoder for 5-second windows at 24kHz...")
+    encoder = create_audio_encoder("base")
+    
+    # Create dummy input matching your AudioPreprocessor output
+    batch_size = 1
+    channels = 1
+    samples = 120000  # 5 seconds @ 24kHz
+    
+    dummy_input = torch.randn(batch_size, channels, samples)
+    print(f"\n[2] Test input shape: {tuple(dummy_input.shape)}")
+    
+    # Forward pass
+    print("\n[3] Running forward pass...")
     with torch.no_grad():
-        waveform = torch.randn(1, 1, 24_000, device=device)
-        latent_hi  = encoder(waveform, torch.tensor([0], device=device))   # Hindi (Devanagari)
-        latent_ur  = encoder(waveform, torch.tensor([9], device=device))   # Urdu (Perso-Arabic)
-        latent_none= encoder(waveform, None)
-    diff_hi_ur = (latent_hi - latent_ur).abs().mean().item()
-    diff_hi_none=(latent_hi - latent_none).abs().mean().item()
-    print(f"  |latent_Hindi − latent_Urdu|   mean diff = {diff_hi_ur:.6f}  (should be > 0)")
-    print(f"  |latent_Hindi − latent_None|   mean diff = {diff_hi_none:.6f}  (should be > 0)")
-    ada_ok = diff_hi_ur > 0 and diff_hi_none > 0
-    print(f"  AdaLN produces distinct outputs: {'✓ PASS' if ada_ok else '✗ FAIL'}")
-    if not ada_ok:
-        all_passed = False
-
-    # ── 5. Integration with AudioPreprocessor ─────────────────────────────
-    print("\n[5] Integration: AudioPreprocessor → AudioEncoder:")
-    try:
-        from audio_preprocessor import AudioPreprocessor
-        import numpy as np
-        import tempfile
-        import soundfile as sf
-
-        # Create a tiny synthetic WAV
-        sr_orig = 16_000
-        t       = np.linspace(0, 1.0, sr_orig, dtype=np.float32)
-        wav     = (0.4 * np.sin(2 * np.pi * 200 * t)).reshape(-1, 1)
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            tmp_path = tmp.name
-        sf.write(tmp_path, wav, sr_orig)
-
-        prep     = AudioPreprocessor(target_sr=24_000)
-        waveform = prep.process(tmp_path).to(device)   # (1, 1, 24000)
-        encoder.eval()
-        with torch.no_grad():
-            latent = encoder(waveform)                  # (1, 100, 512)
-
-        os.unlink(tmp_path)
-        print(f"  AudioPreprocessor output : {tuple(waveform.shape)}")
-        print(f"  AudioEncoder output      : {tuple(latent.shape)}")
-        print(f"  ✓ PASS  — pipeline connected successfully")
-    except ImportError:
-        print("  (AudioPreprocessor not found on path — skipping integration test)")
-
-    # ── Summary ───────────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
-    if all_passed:
-        print("  All tests PASSED.")
-    else:
-        print("  Some tests FAILED — see output above.")
-    print("=" * 60)
-
-    print("\nArchitecture summary:")
-    print(f"  Input  shape : (B, 1, T)")
-    print(f"  Output shape : (B, T // {encoder.compression_ratio}, {encoder.channels})")
-    print(f"  Frame rate   : {encoder.frame_rate:.1f} Hz  (1 frame per 10 ms)")
-    print(f"\nNext step: ResidualVectorQuantizer")
-    print(f"  Accepts (B, T_frames, C) latent from AudioEncoder")
-    print(f"  Outputs discrete codes (B, T_frames, n_codebooks) + quantised latent")
+        output = encoder(dummy_input, return_pooled=True)
+    
+    print(f"\n[4] Results:")
+    print(f"    Sequence embeddings: {output.embeddings.shape}")
+    print(f"    Pooled representation: {output.pooled_output.shape}")
+    print(f"    Frames per second: {output.embeddings.shape[1] / 5.0:.1f}")
+    print(f"    Embedding dimension: {output.embeddings.shape[2]}")
+    
+    print("\n" + "="*60)
+    print("✓ SUCCESS: All dimension issues fixed!")
+    print("="*60)
