@@ -1,0 +1,7 @@
+{
+  "encoder_params": 1922432,
+  "rvq_params": 296512,
+  "decoder_params": 1462785,
+  "total_params": 3740353,
+  "frame_rate": 100.0
+}

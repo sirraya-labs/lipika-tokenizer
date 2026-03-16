@@ -774,14 +774,30 @@ class VectorQuantizerEMA(nn.Module):
         )
         self.embedding.copy_(self.embed_avg / smoothed.unsqueeze(1).clamp(min=1e-7))
 
-        # Dead-code reset [15]
+        # FIXED: Dead-code reset [15] - handle cases where we have fewer samples than dead codes
         dead_mask = counts < self.threshold_dead
         n_dead = int(dead_mask.sum().item())
+        
         if n_dead > 0 and flat_z.size(0) > 0:
-            perm = torch.randperm(flat_z.size(0), device=flat_z.device)[:n_dead]
-            self.embedding[dead_mask] = flat_z[perm].detach()
-            self.embed_avg[dead_mask] = flat_z[perm].detach()
-            self.cluster_size[dead_mask] = self.threshold_dead
+            # We can only reset as many dead codes as we have samples
+            n_reset = min(n_dead, flat_z.size(0))
+            
+            if n_reset > 0:
+                # Get random samples from current batch
+                perm = torch.randperm(flat_z.size(0), device=flat_z.device)[:n_reset]
+                
+                # Get the indices of dead codes to reset
+                dead_indices = torch.where(dead_mask)[0]
+                reset_indices = dead_indices[:n_reset]  # Reset first n_reset dead codes
+                
+                # Reset selected dead codes
+                self.embedding[reset_indices] = flat_z[perm].detach()
+                self.embed_avg[reset_indices] = flat_z[perm].detach()
+                self.cluster_size[reset_indices] = self.threshold_dead
+                
+                # Log if we couldn't reset all dead codes
+                if n_reset < n_dead:
+                    logger.debug(f"Only reset {n_reset}/{n_dead} dead codes (insufficient samples)")
 
     def forward(self, z: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         B, T, D = z.shape

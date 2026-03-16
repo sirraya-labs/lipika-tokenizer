@@ -1,0 +1,26 @@
+{
+  "cpu": {
+    "total_params": 1179265,
+    "encoder_params": 481984,
+    "rvq_params": 313024,
+    "decoder_params": 366849,
+    "frame_rate": 100.0,
+    "compression_ratio": 240
+  },
+  "gpu-small": {
+    "total_params": 14097793,
+    "encoder_params": 7678720,
+    "rvq_params": 362368,
+    "decoder_params": 5841921,
+    "frame_rate": 100.0,
+    "compression_ratio": 240
+  },
+  "gpu-full": {
+    "total_params": 55292289,
+    "encoder_params": 30692864,
+    "rvq_params": 428160,
+    "decoder_params": 23349249,
+    "frame_rate": 100.0,
+    "compression_ratio": 240
+  }
+}
