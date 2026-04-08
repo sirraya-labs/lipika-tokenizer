@@ -105,7 +105,7 @@ The Software includes components licensed under open-source licenses (e.g., PyTo
 
 ### GOVERNING LAW
 
-This License shall be governed by and construed in accordance with the laws of [Insert Jurisdiction, e.g., the Republic of India], without regard to its conflict of law principles.
+This License shall be governed by and construed in accordance with the laws of Anantnag Jammu and Kashmir, India without regard to its conflict of law principles.
 
 ---
 
