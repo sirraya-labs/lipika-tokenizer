@@ -96,7 +96,7 @@ To use Lipika Tokenizer in a commercial product or environment, you must obtain 
 
 **For Commercial Licensing Inquiries:**
 - **Entity:** Sirraya Labs
-- **Email:** [Insert Legal/Commercial Contact Email Here]
+- **Email:** amir@sirraya.org
 - **Subject Line:** Lipika Commercial License Inquiry
 
 ### THIRD-PARTY COMPONENTS
