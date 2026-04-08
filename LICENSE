@@ -1,201 +1,112 @@
-Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+# LIPIKA TOKENIZER — DUAL LICENSE AGREEMENT
 
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+**Copyright (c) 2026 Sirraya Labs. All rights reserved.**
 
-   1. Definitions.
+This software is made available under the terms of the **Creative Commons Attribution-NonCommercial 4.0 International Public License (CC BY-NC 4.0)** for non-commercial use only.
 
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
+**COMMERCIAL USE IS STRICTLY PROHIBITED** without a separate, written Commercial License Agreement executed by **Sirraya Labs**.
 
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
+---
 
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
+## SECTION 1: PUBLIC LICENSE (NON-COMMERCIAL USE)
 
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
+### Creative Commons Attribution-NonCommercial 4.0 International Public License
 
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
+By exercising the Licensed Rights (defined below), You accept and agree to be bound by the terms and conditions of this Creative Commons Attribution-NonCommercial 4.0 International Public License ("Public License"). To the extent this Public License may be interpreted as a contract, You are granted the Licensed Rights in consideration of Your acceptance of these terms and conditions, and the Licensor grants You such rights in consideration of benefits the Licensor receives from making the Licensed Material available under these terms and conditions.
 
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
+#### Section 1 – Definitions.
 
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
+- **Licensed Material** means the artistic or literary work, database, or other material to which the Licensor applied this Public License, specifically the "Lipika Tokenizer" software and associated documentation files.
+- **Licensed Rights** means the rights granted to You subject to the terms and conditions of this Public License.
+- **Licensor** means **Sirraya Labs**.
+- **NonCommercial** means **not primarily intended for or directed towards commercial advantage or monetary compensation**. For purposes of this Public License, the exchange of the Licensed Material for other material subject to Copyright and Similar Rights by digital file-sharing or similar means is NonCommercial provided there is no payment of monetary compensation in connection with the exchange.
+- **Share** means to provide material to the public by any means or process that requires permission under the Licensed Rights.
+- **You** means the individual or entity exercising the Licensed Rights under this Public License.
 
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
+#### Section 2 – Scope.
 
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
+**(a) License Grant.**
+Subject to the terms and conditions of this Public License, the Licensor hereby grants You a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license to exercise the Licensed Rights in the Licensed Material to:
+1.  reproduce and Share the Licensed Material, in whole or in part, for **NonCommercial purposes only**; and
+2.  produce, reproduce, and Share Adapted Material for **NonCommercial purposes only**.
 
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
+**(b) Exceptions and Limitations.**
+For the avoidance of doubt, where Exceptions and Limitations apply to Your use, this Public License does not apply, and You do not need to comply with its terms and conditions.
 
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+**(c) Term.**
+The term of this Public License is specified in Section 6(a).
 
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
+**(d) Media and formats; technical modifications allowed.**
+The Licensor authorizes You to exercise the Licensed Rights in all media and formats whether now known or hereafter created, and to make technical modifications necessary to do so.
 
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
+**(e) Downstream recipients.**
+1.  **Offer from the Licensor – Licensed Material.** Every recipient of the Licensed Material automatically receives an offer from the Licensor to exercise the Licensed Rights under the terms and conditions of this Public License.
+2.  **No downstream restrictions.** You may not offer or impose any additional or different terms or conditions on, or apply any Effective Technological Measures to, the Licensed Material if doing so restricts exercise of the Licensed Rights by any recipient of the Licensed Material.
 
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
+**(f) No endorsement.**
+Nothing in this Public License constitutes or may be construed as permission to assert or imply that You are, or that Your use of the Licensed Material is, connected with, or sponsored, endorsed, or granted official status by, the Licensor or others designated to receive attribution as provided in Section 3(a)(1)(A)(i).
 
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
+#### Section 3 – License Conditions.
 
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
+Your exercise of the Licensed Rights is expressly made subject to the following conditions.
 
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
+**(a) Attribution.**
+1.  If You Share the Licensed Material (including in modified form), You must:
+    A. retain the following if it is supplied by the Licensor with the Licensed Material:
+        i. identification of the creator(s) of the Licensed Material and any others designated to receive attribution, in any reasonable manner requested by the Licensor (including by pseudonym if designated);
+        ii. a copyright notice;
+        iii. a notice that refers to this Public License;
+        iv. a notice that refers to the disclaimer of warranties;
+        v. a URI or hyperlink to the Licensed Material to the extent reasonably practicable;
+    B. indicate if You modified the Licensed Material and retain an indication of any previous modifications; and
+    C. indicate the Licensed Material is licensed under this Public License, and include the text of, or the URI or hyperlink to, this Public License.
 
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
+#### Section 4 – Sui Generis Database Rights.
 
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
+Where the Licensed Rights include Sui Generis Database Rights that apply to Your use of the Licensed Material, the terms of the CC BY-NC 4.0 license apply to those rights with respect to NonCommercial extraction and reuse only.
 
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
+#### Section 5 – Disclaimer of Warranties and Limitation of Liability.
 
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
+**(a) Unless otherwise separately undertaken by the Licensor, to the extent possible, the Licensor offers the Licensed Material as-is and as-available, and makes no representations or warranties of any kind concerning the Licensed Material, whether express, implied, statutory, or other.** This includes, without limitation, warranties of title, merchantability, fitness for a particular purpose, non-infringement, absence of latent or other defects, accuracy, or the presence or absence of errors, whether or not known or discoverable.
 
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
+**(b) To the extent possible, in no event will the Licensor be liable to You on any legal theory for any direct, special, indirect, incidental, consequential, punitive, exemplary, or other losses, costs, expenses, or damages arising out of this Public License or use of the Licensed Material.**
 
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
+#### Section 6 – Term and Termination.
 
-   END OF TERMS AND CONDITIONS
+**(a)** This Public License applies for the term of the Copyright and Similar Rights licensed here. However, if You fail to comply with this Public License, then Your rights under this Public License terminate automatically.
 
-   APPENDIX: How to apply the Apache License to your work.
+**(b)** For the avoidance of doubt, the Licensor may also offer the Licensed Material under separate terms or conditions or stop distributing the Licensed Material at any time.
 
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
+---
 
-   Copyright [yyyy] [name of copyright owner]
+## SECTION 2: COMMERCIAL LICENSE (SIRRAYA LABS PROPRIETARY)
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+### RESTRICTION ON COMMERCIAL USE
 
-       http://www.apache.org/licenses/LICENSE-2.0
+The software known as "Lipika Tokenizer" (the "Software") is **not open-source for commercial purposes**. Commercial use of the Software, or any Modified Version or Derivative Work thereof, is **strictly prohibited** unless the User has entered into a separate, written Commercial License Agreement with **Sirraya Labs**.
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+**"Commercial Use"** is defined as any use of the Software that:
+- Is intended for or results in commercial advantage or monetary compensation.
+- Is deployed as part of a product or service offered to third parties (including SaaS, PaaS, or internal enterprise tooling that generates revenue).
+- Is used by any entity that operates as a for-profit business or organization, or is funded by or operates on behalf of a for-profit entity.
+
+### OBTAINING A COMMERCIAL LICENSE
+
+To use Lipika Tokenizer in a commercial product or environment, you must obtain a Commercial License from Sirraya Labs. This license will grant you rights to use, modify, and distribute the Software in commercial settings without the copyleft or non-commercial restrictions of the CC BY-NC 4.0 license.
+
+**For Commercial Licensing Inquiries:**
+- **Entity:** Sirraya Labs
+- **Email:** [Insert Legal/Commercial Contact Email Here]
+- **Subject Line:** Lipika Commercial License Inquiry
+
+### THIRD-PARTY COMPONENTS
+
+The Software includes components licensed under open-source licenses (e.g., PyTorch, Librosa, Transformers). The Commercial License granted by Sirraya Labs applies solely to the **Lipika Tokenizer** source code and does not supersede or replace the licenses of any third-party dependencies. The User is solely responsible for complying with the licenses of all third-party components used in conjunction with the Software.
+
+### GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the laws of [Insert Jurisdiction, e.g., the Republic of India], without regard to its conflict of law principles.
+
+---
+
+*End of License Agreement.*
