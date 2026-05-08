@@ -3,110 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lipika — Neural Audio Codec for Indic TTS</title>
+    <title>Lipika — Neural Audio Codec for Indic TTS | Technical Specification</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #09090b;
-            --bg-secondary: #121214;
-            --bg-tertiary: #18181b;
-            --bg-card: #1a1a1e;
-            --bg-card-hover: #1f1f24;
-            --border-primary: #27272a;
-            --border-secondary: #2e2e33;
-            --border-accent: rgba(99,102,241,0.25);
-            --text-primary: #fafafa;
-            --text-secondary: #a1a1aa;
-            --text-tertiary: #71717a;
-            --accent-blue: #3b82f6;
-            --accent-indigo: #6366f1;
-            --accent-violet: #8b5cf6;
-            --accent-emerald: #10b981;
-            --accent-amber: #f59e0b;
-            --accent-rose: #f43f5e;
-            --accent-sky: #0ea5e9;
-            --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            --gradient-secondary: linear-gradient(135deg, #6366f1, #a855f7);
-            --gradient-glow: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12), transparent 60%);
-            --gradient-glow-strong: radial-gradient(ellipse at 50% 50%, rgba(99,102,241,0.2), transparent 70%);
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.5);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.6);
-            --shadow-glow: 0 0 60px rgba(99,102,241,0.08);
-            --radius-xs: 4px;
+            --bg-root: #050508;
+            --bg-primary: #09090d;
+            --bg-secondary: #0f0f15;
+            --bg-tertiary: #16161e;
+            --bg-card: #1a1a24;
+            --bg-card-alt: #1e1e28;
+            --bg-overlay: rgba(9,9,13,0.88);
+            --border-subtle: #1c1c26;
+            --border-primary: #252530;
+            --border-secondary: #2e2e3a;
+            --border-accent: rgba(99,102,241,0.18);
+            --border-accent-strong: rgba(99,102,241,0.35);
+            --text-primary: #eeeef2;
+            --text-secondary: #a8a8b8;
+            --text-tertiary: #6b6b7c;
+            --text-muted: #4a4a58;
+            --accent-blue: #4d9fff;
+            --accent-indigo: #6b70fc;
+            --accent-violet: #9b6ffa;
+            --accent-emerald: #2dd4a0;
+            --accent-amber: #f5a623;
+            --accent-rose: #f44;
+            --accent-sky: #38bdf8;
+            --accent-pink: #f472b6;
+            --gradient-primary: linear-gradient(135deg, #4d9fff 0%, #9b6ffa 100%);
+            --gradient-secondary: linear-gradient(135deg, #6b70fc 0%, #c084fc 100%);
+            --gradient-warm: linear-gradient(135deg, #f5a623 0%, #f44 100%);
+            --gradient-cool: linear-gradient(135deg, #2dd4a0 0%, #38bdf8 100%);
+            --gradient-hero: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.15), transparent);
+            --gradient-card: radial-gradient(ellipse at 100% 100%, rgba(99,102,241,0.06), transparent);
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-elevated: 0 4px 16px rgba(0,0,0,0.6), 0 8px 40px rgba(0,0,0,0.5);
+            --radius-none: 0;
+            --radius-xs: 3px;
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 16px;
             --radius-xl: 24px;
-            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
+            --radius-full: 9999px;
+            --ease-fast: 160ms cubic-bezier(0.4,0,0.2,1);
+            --ease-smooth: 320ms cubic-bezier(0.4,0,0.2,1);
+            --ease-spring: 500ms cubic-bezier(0.34,1.56,0.64,1);
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            --font-devanagari: 'Noto Sans Devanagari', var(--font-body);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-
+        html { scroll-behavior: smooth; scroll-padding-top: 72px; }
         body {
-            background: var(--bg-primary);
+            background: var(--bg-root);
             color: var(--text-primary);
-            font-family: var(--font-sans);
+            font-family: var(--font-body);
             font-weight: 400;
-            line-height: 1.7;
+            font-size: 15px;
+            line-height: 1.72;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.004em;
         }
 
+        /* ── Navigation ──────────────────────────── */
         #global-nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            background: rgba(9,9,11,0.82);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            transition: all var(--transition-smooth);
+            height: 56px;
+            background: rgba(9,9,13,0.84);
+            backdrop-filter: blur(20px) saturate(200%);
+            -webkit-backdrop-filter: blur(20px) saturate(200%);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: all var(--ease-smooth);
         }
         #global-nav.scrolled {
-            background: rgba(9,9,11,0.96);
-            border-bottom-color: rgba(255,255,255,0.1);
+            background: rgba(5,5,8,0.96);
+            border-bottom-color: rgba(255,255,255,0.08);
+            box-shadow: 0 1px 8px rgba(0,0,0,0.4);
         }
         .nav-inner {
-            max-width: 1340px; margin: 0 auto; padding: 0 40px;
-            display: flex; align-items: center; height: 56px; gap: 32px;
+            max-width: 1440px; margin: 0 auto; padding: 0 36px;
+            display: flex; align-items: center; height: 100%; gap: 28px;
         }
         .nav-brand {
-            font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;
+            font-weight: 800; font-size: 1.1rem; letter-spacing: -0.03em;
             background: var(--gradient-primary);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; white-space: nowrap;
+            background-clip: text; white-space: nowrap; flex-shrink: 0;
         }
         .nav-links {
-            display: flex; align-items: center; gap: 24px;
-            overflow-x: auto; scrollbar-width: none;
+            display: flex; align-items: center; gap: 20px;
+            overflow-x: auto; scrollbar-width: none; flex: 1;
         }
         .nav-links::-webkit-scrollbar { display: none; }
         .nav-links a {
-            color: var(--text-secondary); text-decoration: none;
-            font-size: 0.82rem; font-weight: 500; letter-spacing: 0.01em;
-            white-space: nowrap; transition: color var(--transition-fast);
+            color: var(--text-tertiary); text-decoration: none;
+            font-size: 0.8rem; font-weight: 500; letter-spacing: 0.01em;
+            white-space: nowrap; transition: color var(--ease-fast);
+            position: relative; padding: 4px 0;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+            height: 1.5px; background: var(--accent-indigo);
+            transform: scaleX(0); transition: transform var(--ease-smooth);
+            transform-origin: left;
         }
         .nav-links a:hover { color: var(--text-primary); }
-        .nav-cta { margin-left: auto; display: flex; gap: 10px; }
+        .nav-links a:hover::after { transform: scaleX(1); }
+        .nav-cta { display: flex; gap: 10px; flex-shrink: 0; }
 
+        /* ── Buttons ──────────────────────────────── */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            gap: 6px; padding: 8px 18px; border-radius: var(--radius-sm);
-            font-family: var(--font-sans); font-size: 0.8rem; font-weight: 600;
+            gap: 7px; padding: 8px 18px; border-radius: var(--radius-sm);
+            font-family: var(--font-body); font-size: 0.8rem; font-weight: 600;
             letter-spacing: 0.01em; cursor: pointer; text-decoration: none;
-            transition: all var(--transition-fast); border: none; white-space: nowrap;
+            transition: all var(--ease-fast); border: none; white-space: nowrap;
+            position: relative; overflow: hidden;
         }
         .btn-primary {
             background: var(--gradient-primary); color: #fff;
-            box-shadow: var(--shadow-sm), 0 0 20px rgba(99,102,241,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 24px rgba(99,102,241,0.14);
         }
         .btn-primary:hover {
-            box-shadow: var(--shadow-md), 0 0 30px rgba(99,102,241,0.25);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 36px rgba(99,102,241,0.22);
             transform: translateY(-1px);
         }
         .btn-secondary {
@@ -114,214 +138,361 @@
             border: 1px solid var(--border-primary);
         }
         .btn-secondary:hover {
-            background: rgba(255,255,255,0.08); border-color: var(--border-secondary);
+            background: rgba(255,255,255,0.07); border-color: var(--border-secondary);
         }
-        .btn-lg { padding: 12px 28px; font-size: 0.9rem; border-radius: var(--radius-md); }
+        .btn-lg { padding: 13px 28px; font-size: 0.88rem; border-radius: var(--radius-md); }
+        .btn-outline {
+            background: transparent; color: var(--accent-indigo);
+            border: 1px solid var(--border-accent-strong);
+        }
+        .btn-outline:hover { background: rgba(99,102,241,0.08); }
 
+        /* ── Sections ──────────────────────────────── */
         .section {
-            max-width: 1340px; margin: 0 auto; padding: 100px 40px;
+            max-width: 1440px; margin: 0 auto; padding: 100px 40px;
         }
+        .section-narrow { max-width: 1100px; }
         .section-divider {
-            height: 1px; background: var(--border-primary);
-            max-width: 1340px; margin: 0 auto; padding: 0 40px;
+            height: 1px; background: var(--border-subtle);
+            max-width: 1440px; margin: 0 auto;
         }
         .section-label {
-            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+            font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
             text-transform: uppercase; color: var(--accent-indigo); margin-bottom: 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-label::before {
+            content: ''; width: 24px; height: 1px;
+            background: var(--accent-indigo); opacity: 0.5;
         }
         .section-title {
-            font-size: 2.4rem; font-weight: 800; letter-spacing: -0.025em;
-            line-height: 1.15; margin-bottom: 16px;
+            font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 800;
+            letter-spacing: -0.028em; line-height: 1.12; margin-bottom: 14px;
+        }
+        .section-subtitle {
+            font-size: 1.25rem; color: var(--text-tertiary);
+            font-weight: 400; margin-bottom: 8px;
         }
         .section-desc {
-            color: var(--text-secondary); font-size: 1.05rem;
-            max-width: 780px; margin-bottom: 40px;
+            color: var(--text-secondary); font-size: 0.98rem;
+            max-width: 800px; margin-bottom: 36px; line-height: 1.68;
         }
+        .section-desc strong { color: var(--text-primary); }
 
-        .grid { display: grid; gap: 20px; }
+        /* ── Grids ─────────────────────────────────── */
+        .grid { display: grid; gap: 18px; }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-5 { grid-template-columns: repeat(5, 1fr); }
+        .grid-auto { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 
+        /* ── Cards ─────────────────────────────────── */
         .card {
             background: var(--bg-card); border: 1px solid var(--border-primary);
-            border-radius: var(--radius-lg); padding: 28px;
-            transition: all var(--transition-smooth); cursor: default;
+            border-radius: var(--radius-lg); padding: 26px;
+            transition: all var(--ease-smooth); cursor: default;
+            position: relative;
         }
         .card:hover {
-            background: var(--bg-card-hover); border-color: var(--border-secondary);
-            box-shadow: var(--shadow-glow);
+            background: var(--bg-card-alt); border-color: var(--border-secondary);
+            box-shadow: var(--shadow-card), 0 0 60px rgba(99,102,241,0.04);
+        }
+        .card-accent {
+            border-left: 3px solid var(--accent-indigo);
+            border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
         }
         .card-icon {
-            width: 44px; height: 44px; border-radius: var(--radius-md);
+            width: 42px; height: 42px; border-radius: var(--radius-md);
             display: flex; align-items: center; justify-content: center;
-            margin-bottom: 16px; font-size: 1.1rem; font-weight: 700;
+            margin-bottom: 14px; font-size: 1rem; font-weight: 700;
+            flex-shrink: 0;
         }
-        .card-icon.blue { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
-        .card-icon.indigo { background: rgba(99,102,241,0.12); color: var(--accent-indigo); }
-        .card-icon.violet { background: rgba(139,92,246,0.12); color: var(--accent-violet); }
-        .card-icon.emerald { background: rgba(16,185,129,0.12); color: var(--accent-emerald); }
-        .card-icon.amber { background: rgba(245,158,11,0.12); color: var(--accent-amber); }
-        .card-icon.rose { background: rgba(244,63,94,0.12); color: var(--accent-rose); }
-        .card-icon.sky { background: rgba(14,165,233,0.12); color: var(--accent-sky); }
+        .card-icon.blue { background: rgba(77,159,255,0.1); color: var(--accent-blue); }
+        .card-icon.indigo { background: rgba(107,112,252,0.1); color: var(--accent-indigo); }
+        .card-icon.violet { background: rgba(155,111,250,0.1); color: var(--accent-violet); }
+        .card-icon.emerald { background: rgba(45,212,160,0.1); color: var(--accent-emerald); }
+        .card-icon.amber { background: rgba(245,166,35,0.1); color: var(--accent-amber); }
+        .card-icon.rose { background: rgba(255,68,68,0.1); color: var(--accent-rose); }
+        .card-icon.sky { background: rgba(56,189,248,0.1); color: var(--accent-sky); }
+        .card-icon.pink { background: rgba(244,114,182,0.1); color: var(--accent-pink); }
         .card h4 {
-            font-size: 0.95rem; font-weight: 700; letter-spacing: -0.01em;
-            margin-bottom: 6px;
+            font-size: 0.92rem; font-weight: 700; letter-spacing: -0.01em;
+            margin-bottom: 5px; color: var(--text-primary);
         }
-        .card p { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.55; }
+        .card h5 {
+            font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .card p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.58; }
+        .card .card-meta {
+            font-size: 0.72rem; color: var(--text-muted);
+            font-family: var(--font-mono); margin-top: 8px;
+        }
 
+        /* ── Highlight Box ─────────────────────────── */
+        .callout {
+            background: var(--bg-card); border: 1px solid var(--border-accent);
+            border-radius: var(--radius-lg); padding: 28px 32px; margin: 24px 0;
+            position: relative; overflow: hidden;
+        }
+        .callout::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+            background: var(--gradient-primary);
+        }
+        .callout h4 { color: var(--accent-indigo); margin-bottom: 6px; font-size: 0.95rem; }
+        .callout p { color: var(--text-secondary); font-size: 0.88rem; }
+        .callout code {
+            background: rgba(107,112,252,0.1); padding: 2px 7px;
+            border-radius: var(--radius-xs); font-family: var(--font-mono);
+            font-size: 0.8rem; color: var(--accent-violet);
+        }
+
+        /* ── Tables ────────────────────────────────── */
         .table-wrap {
             border: 1px solid var(--border-primary); border-radius: var(--radius-lg);
-            overflow: hidden; margin: 24px 0;
+            overflow: hidden; margin: 20px 0; background: var(--bg-secondary);
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-        th {
-            background: var(--bg-tertiary); padding: 12px 18px; text-align: left;
-            font-weight: 600; font-size: 0.76rem; letter-spacing: 0.04em;
-            text-transform: uppercase; color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-primary);
+        table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+        thead th {
+            background: var(--bg-tertiary); padding: 13px 18px; text-align: left;
+            font-weight: 600; font-size: 0.72rem; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--text-tertiary);
+            border-bottom: 1px solid var(--border-secondary);
+            position: sticky; top: 0;
         }
-        td { padding: 12px 18px; border-bottom: 1px solid var(--border-primary); color: var(--text-secondary); }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.015); }
-        td:first-child, th:first-child { padding-left: 22px; }
-        td:last-child, th:last-child { padding-right: 22px; }
+        tbody td {
+            padding: 12px 18px; border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-secondary); vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(255,255,255,0.012); }
+        td:first-child, th:first-child { padding-left: 24px; }
+        td:last-child, th:last-child { padding-right: 24px; }
+        td strong { color: var(--text-primary); font-weight: 600; }
+        td code {
+            background: rgba(107,112,252,0.08); padding: 2px 6px;
+            border-radius: var(--radius-xs); font-family: var(--font-mono);
+            font-size: 0.78rem;
+        }
 
+        /* ── Tags / Badges ─────────────────────────── */
         .tag {
-            display: inline-block; padding: 2px 10px; border-radius: var(--radius-xs);
-            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.03em;
+            display: inline-block; padding: 3px 10px; border-radius: var(--radius-full);
+            font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em;
+            line-height: 1.4;
         }
-        .tag-green { background: rgba(16,185,129,0.12); color: var(--accent-emerald); }
-        .tag-blue { background: rgba(59,130,246,0.12); color: var(--accent-blue); }
-        .tag-violet { background: rgba(139,92,246,0.12); color: var(--accent-violet); }
-        .tag-amber { background: rgba(245,158,11,0.12); color: var(--accent-amber); }
-        .tag-rose { background: rgba(244,63,94,0.12); color: var(--accent-rose); }
+        .tag-green { background: rgba(45,212,160,0.1); color: var(--accent-emerald); }
+        .tag-blue { background: rgba(77,159,255,0.1); color: var(--accent-blue); }
+        .tag-violet { background: rgba(155,111,250,0.1); color: var(--accent-violet); }
+        .tag-amber { background: rgba(245,166,35,0.1); color: var(--accent-amber); }
+        .tag-rose { background: rgba(255,68,68,0.1); color: var(--accent-rose); }
+        .tag-sky { background: rgba(56,189,248,0.1); color: var(--accent-sky); }
+        .tag-indigo { background: rgba(107,112,252,0.1); color: var(--accent-indigo); }
 
+        /* ── Code Blocks ───────────────────────────── */
         .code-block {
             background: var(--bg-secondary); border: 1px solid var(--border-primary);
             border-radius: var(--radius-lg); overflow: hidden; margin: 18px 0;
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-card);
         }
         .code-header {
             background: var(--bg-tertiary); padding: 10px 18px;
             border-bottom: 1px solid var(--border-primary);
             display: flex; align-items: center; gap: 8px;
         }
-        .code-dot { width: 10px; height: 10px; border-radius: 50%; background: #3e3e42; }
-        .code-dot:nth-child(1) { background: #f43f5e; }
-        .code-dot:nth-child(2) { background: #f59e0b; }
-        .code-dot:nth-child(3) { background: #10b981; }
-        .code-title {
-            margin-left: 8px; font-size: 0.7rem; color: var(--text-tertiary);
-            font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+        .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .code-dot.cd1 { background: #f44; }
+        .code-dot.cd2 { background: #f5a623; }
+        .code-dot.cd3 { background: #2dd4a0; }
+        .code-fname {
+            margin-left: 8px; font-size: 0.68rem; color: var(--text-muted);
+            font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
         }
         .code-body { padding: 18px 22px; overflow-x: auto; }
         .code-body pre {
-            font-family: var(--font-mono); font-size: 0.8rem;
-            line-height: 1.7; color: var(--text-primary);
+            font-family: var(--font-mono); font-size: 0.78rem;
+            line-height: 1.75; color: var(--text-primary);
+            margin: 0; white-space: pre;
         }
-        .c1 { color: #71717a; }
-        .k { color: #f43f5e; }
-        .s { color: #a5d6ff; }
-        .n { color: #fafafa; }
-        .f { color: #c4b5fd; }
+        .syn-c { color: #5c5c6e; }
+        .syn-k { color: #f44; }
+        .syn-s { color: #8cc8ff; }
+        .syn-n { color: #eeeef2; }
+        .syn-f { color: #c4b5fd; }
+        .syn-m { color: #f5a623; }
+        .syn-v { color: #2dd4a0; }
 
-        .svg-diagram {
-            width: 100%; max-width: 100%; border-radius: var(--radius-lg);
+        /* ── SVG Diagrams ──────────────────────────── */
+        .diagram-container {
             background: var(--bg-secondary); border: 1px solid var(--border-primary);
-            margin: 24px 0; overflow: hidden; box-shadow: var(--shadow-md);
+            border-radius: var(--radius-lg); overflow: hidden; margin: 24px 0;
+            box-shadow: var(--shadow-card);
         }
+        .diagram-container svg { display: block; width: 100%; height: auto; }
 
-        .highlight-box {
-            background: var(--bg-card); border: 1px solid var(--border-accent);
-            border-radius: var(--radius-lg); padding: 28px; margin: 24px 0;
-            position: relative; overflow: hidden;
-        }
-        .highlight-box::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: var(--gradient-primary);
-        }
-        .highlight-box h4 { color: var(--accent-indigo); margin-bottom: 8px; }
-        .highlight-box p { color: var(--text-secondary); font-size: 0.9rem; }
-
+        /* ── Innovation Cards ──────────────────────── */
         .innovation-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 20px; margin: 24px 0;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 18px; margin: 28px 0;
         }
         .innovation-card {
             background: var(--bg-card); border: 1px solid var(--border-primary);
             border-radius: var(--radius-lg); padding: 28px;
-            transition: all var(--transition-smooth);
+            transition: all var(--ease-smooth);
             position: relative; overflow: hidden;
         }
         .innovation-card:hover {
             border-color: var(--border-accent);
-            box-shadow: var(--shadow-glow);
+            box-shadow: var(--shadow-elevated), 0 0 80px rgba(99,102,241,0.05);
         }
         .innovation-card .innovation-number {
-            font-size: 3rem; font-weight: 900; letter-spacing: -0.04em;
+            font-size: 3.4rem; font-weight: 900; letter-spacing: -0.05em;
             background: var(--gradient-primary);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; opacity: 0.3; position: absolute;
-            top: 12px; right: 20px;
+            background-clip: text; opacity: 0.25; position: absolute;
+            top: 10px; right: 18px; line-height: 1;
         }
         .innovation-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; position: relative; z-index: 1; }
-        .innovation-card p { font-size: 0.84rem; color: var(--text-secondary); position: relative; z-index: 1; }
+        .innovation-card p { font-size: 0.83rem; color: var(--text-secondary); position: relative; z-index: 1; }
+        .innovation-card .highlight { color: var(--accent-violet); font-weight: 600; }
 
-        .comparison-table td:first-child { font-weight: 600; color: var(--text-primary); }
-
-        .glow-text {
-            background: var(--gradient-primary);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; font-weight: 700;
+        /* ── Glossary / Definition List ────────────── */
+        .def-list { margin: 20px 0; }
+        .def-item {
+            display: grid; grid-template-columns: 200px 1fr; gap: 16px;
+            padding: 12px 0; border-bottom: 1px solid var(--border-subtle);
+            align-items: baseline;
         }
-
-        footer {
-            border-top: 1px solid var(--border-primary); padding: 40px;
-            text-align: center; max-width: 1340px; margin: 0 auto;
+        .def-item:last-child { border-bottom: none; }
+        .def-term {
+            font-weight: 600; color: var(--accent-violet);
+            font-size: 0.84rem; font-family: var(--font-mono); letter-spacing: 0.02em;
         }
-        .footer-inner {
+        .def-desc { color: var(--text-secondary); font-size: 0.84rem; }
+
+        /* ── File Tree ─────────────────────────────── */
+        .file-tree {
+            background: var(--bg-secondary); border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg); padding: 20px 24px;
+            font-family: var(--font-mono); font-size: 0.78rem; line-height: 2;
+            color: var(--text-secondary); margin: 16px 0; box-shadow: var(--shadow-card);
+        }
+        .file-tree .dir { color: var(--accent-blue); font-weight: 600; }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); margin-left: 8px; }
+
+        /* ── Tabs (CSS-only) ───────────────────────── */
+        .tabs { margin: 20px 0; }
+        .tab-nav { display: flex; gap: 2px; border-bottom: 1px solid var(--border-primary); }
+        .tab-nav label {
+            padding: 10px 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+            color: var(--text-tertiary); border-bottom: 2px solid transparent;
+            transition: all var(--ease-fast); margin-bottom: -1px;
+        }
+        .tab-nav label:hover { color: var(--text-primary); }
+        .tab-content { display: none; padding: 20px 0; }
+        .tab-radio { display: none; }
+        #tab1:checked ~ .tab-nav label[for="tab1"],
+        #tab2:checked ~ .tab-nav label[for="tab2"],
+        #tab3:checked ~ .tab-nav label[for="tab3"],
+        #tab4:checked ~ .tab-nav label[for="tab4"] {
+            color: var(--accent-indigo); border-bottom-color: var(--accent-indigo);
+        }
+        #tab1:checked ~ #content1,
+        #tab2:checked ~ #content2,
+        #tab3:checked ~ #content3,
+        #tab4:checked ~ #content4 { display: block; }
+
+        /* ── Footer ────────────────────────────────── */
+        .footer {
+            border-top: 1px solid var(--border-subtle); padding: 48px 40px;
+            max-width: 1440px; margin: 0 auto;
+        }
+        .footer-grid {
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px; margin-bottom: 32px;
+        }
+        .footer-col h5 {
+            font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px;
+        }
+        .footer-col a {
+            display: block; color: var(--text-tertiary); text-decoration: none;
+            font-size: 0.82rem; margin-bottom: 8px; transition: color var(--ease-fast);
+        }
+        .footer-col a:hover { color: var(--text-primary); }
+        .footer-bottom {
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.78rem; color: var(--text-tertiary);
+            padding-top: 20px; border-top: 1px solid var(--border-subtle);
+            font-size: 0.76rem; color: var(--text-muted);
         }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: var(--text-tertiary); text-decoration: none; transition: color var(--transition-fast); }
-        .footer-links a:hover { color: var(--text-primary); }
 
-        @media (max-width: 1024px) {
-            .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
-            .innovation-grid { grid-template-columns: 1fr; }
+        /* ── Phoneme Grid ──────────────────────────── */
+        .phoneme-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 6px; margin: 14px 0;
+        }
+        .phoneme-cell {
+            background: var(--bg-card); border: 1px solid var(--border-primary);
+            border-radius: var(--radius-sm); padding: 8px 10px; text-align: center;
+            font-size: 0.8rem; font-family: var(--font-devanagari);
+        }
+        .phoneme-cell .ipa { font-size: 0.7rem; color: var(--text-tertiary); display: block; }
+
+        /* ── Responsive ────────────────────────────── */
+        @media (max-width: 1200px) {
+            .grid-4, .grid-5 { grid-template-columns: repeat(2, 1fr); }
+            .def-item { grid-template-columns: 1fr; gap: 4px; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-            .nav-inner { padding: 0 20px; gap: 16px; }
+            .nav-inner { padding: 0 18px; gap: 14px; }
             .nav-cta { display: none; }
             .section { padding: 60px 20px; }
-            .section-title { font-size: 1.8rem; }
-            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-            .footer-inner { flex-direction: column; gap: 12px; }
+            .section-title { font-size: 1.6rem; }
+            .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+            .innovation-grid { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+        }
+
+        /* ── Print ─────────────────────────────────── */
+        @media print {
+            #global-nav { position: static; }
+            .nav-cta, .btn { display: none; }
+            .section { padding: 40px 0; }
+            body { font-size: 12px; color: #000; background: #fff; }
+            .card, .callout, .code-block, .diagram-container { border: 1px solid #ccc; box-shadow: none; }
         }
     </style>
 </head>
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- NAV                                                                   -->
+<!-- NAVIGATION                                                            -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <nav id="global-nav">
     <div class="nav-inner">
         <div class="nav-brand">Lipika</div>
         <div class="nav-links">
-            <a href="#why">Why</a>
+            <a href="#abstract">Abstract</a>
+            <a href="#motivation">Motivation</a>
             <a href="#architecture">Architecture</a>
-            <a href="#innovation">Innovation</a>
-            <a href="#presets">Hardware</a>
+            <a href="#components">Components</a>
+            <a href="#innovation">Innovations</a>
+            <a href="#presets">Presets</a>
             <a href="#scripts">Scripts</a>
+            <a href="#phonology">Phonology</a>
             <a href="#training">Training</a>
-            <a href="#reference">API</a>
+            <a href="#losses">Losses</a>
+            <a href="#api">API</a>
+            <a href="#quickstart">Quick Start</a>
+            <a href="#glossary">Glossary</a>
         </div>
         <div class="nav-cta">
-            <a href="#quickstart" class="btn btn-primary">Get Started</a>
-            <a href="#" class="btn btn-secondary">GitHub</a>
+            <a href="#quickstart" class="btn btn-primary">Quick Start</a>
+            <a href="https://github.com" class="btn btn-secondary" target="_blank" rel="noopener">GitHub</a>
         </div>
     </div>
 </nav>
@@ -329,73 +500,291 @@
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- HERO                                                                  -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section style="position:relative;padding:160px 40px 100px;text-align:center;overflow:hidden;max-width:1340px;margin:0 auto;">
-    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:900px;height:700px;background:var(--gradient-glow);pointer-events:none;"></div>
-    <div style="display:inline-block;padding:4px 16px;border-radius:20px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:var(--accent-indigo);font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:28px;">
+<section style="position:relative;padding:160px 40px 90px;text-align:center;overflow:hidden;max-width:1440px;margin:0 auto;">
+    <div style="position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:1000px;height:800px;background:var(--gradient-hero);pointer-events:none;"></div>
+    <div style="display:inline-flex;align-items:center;gap:10px;padding:5px 16px;border-radius:var(--radius-full);background:rgba(107,112,252,0.08);border:1px solid rgba(107,112,252,0.2);color:var(--accent-indigo);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:28px;position:relative;">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--accent-emerald);display:inline-block;"></span>
         Research Preview &middot; v1.0
     </div>
-    <h1 style="font-size:clamp(2.8rem,6vw,4.8rem);font-weight:900;letter-spacing:-0.03em;line-height:1.05;max-width:960px;margin:0 auto 20px;background:linear-gradient(180deg,#fff 0%,#a1a1aa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-        Production-Grade<br>
-        <span style="background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Neural Audio Codec</span><br>
-        for Indic Speech Synthesis
+    <h1 style="font-size:clamp(2.6rem,5.5vw,4.6rem);font-weight:900;letter-spacing:-0.035em;line-height:1.04;max-width:1000px;margin:0 auto 20px;background:linear-gradient(180deg,#fafafe 0%,#c0c0d0 55%,#7a7a90 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;">
+        Neural Audio Codec<br>
+        <span style="background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">for Indic Speech Synthesis</span>
     </h1>
-    <p style="font-size:1.1rem;color:var(--text-secondary);max-width:660px;margin:0 auto 36px;font-weight:400;line-height:1.65;">
-        Lipika converts speech waveforms into discrete tokens at 100 frames per second
-        with 240&times; compression, purpose-built for text-to-speech across
-        twelve Indic script families. Multi-backend support for CUDA, Apple Silicon, and CPU.
+    <p style="font-size:1.08rem;color:var(--text-secondary);max-width:700px;margin:0 auto 36px;font-weight:400;line-height:1.65;position:relative;">
+        Production-grade waveform-to-token compression at 240&times; with native support
+        for twelve Indic script families. Cross-platform deployment on CUDA, Apple Silicon, and CPU.
     </p>
-    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
-        <a href="#quickstart" class="btn btn-primary btn-lg">Quick Start</a>
-        <a href="#why" class="btn btn-secondary btn-lg">Why Lipika</a>
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;position:relative;">
+        <a href="#quickstart" class="btn btn-primary btn-lg">Quick Start &mdash; 5 Minutes</a>
+        <a href="#abstract" class="btn btn-secondary btn-lg">Read the Paper</a>
+        <a href="https://github.com" class="btn btn-outline btn-lg" target="_blank" rel="noopener">View on GitHub</a>
     </div>
-    <div style="display:flex;justify-content:center;gap:56px;margin-top:48px;flex-wrap:wrap;">
-        <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">24 kHz</div><div style="font-size:0.75rem;color:var(--text-tertiary);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:2px;">Sample Rate</div></div>
-        <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">240&times;</div><div style="font-size:0.75rem;color:var(--text-tertiary);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:2px;">Compression</div></div>
-        <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100 Hz</div><div style="font-size:0.75rem;color:var(--text-tertiary);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:2px;">Frame Rate</div></div>
-        <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">12</div><div style="font-size:0.75rem;color:var(--text-tertiary);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:2px;">Scripts</div></div>
-        <div style="text-align:center;"><div style="font-size:2.2rem;font-weight:800;letter-spacing:-0.02em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">3</div><div style="font-size:0.75rem;color:var(--text-tertiary);font-weight:500;letter-spacing:0.04em;text-transform:uppercase;margin-top:2px;">Backends</div></div>
+    <div style="display:flex;justify-content:center;gap:48px;margin-top:52px;flex-wrap:wrap;position:relative;">
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">24 kHz</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Sample Rate</div></div>
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">240&times;</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Compression Ratio</div></div>
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">100 Hz</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Frame Rate</div></div>
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">12</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Script Families</div></div>
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">3</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Compute Backends</div></div>
+        <div style="text-align:center;"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-0.03em;background:var(--gradient-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">14.1M</div><div style="font-size:0.7rem;color:var(--text-muted);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Max Parameters</div></div>
     </div>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- WHY LIPIKA                                                            -->
+<!-- ABSTRACT                                                              -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section class="section" id="why">
-    <div class="section-label">The Problem</div>
-    <h2 class="section-title">Indic languages have been underserved by neural codecs.</h2>
+<section class="section section-narrow" id="abstract">
+    <div class="section-label">Abstract</div>
+    <h2 class="section-title">What Lipika solves.</h2>
     <p class="section-desc">
-        Standard audio codecs are trained predominantly on English and Mandarin.
-        Indic languages carry phonemic distinctions — aspiration, retroflexion,
-        murmured voice — that generic models fail to preserve. Lipika is the first
-        codec designed from first principles for the Indic phonological inventory.
+        Neural audio codecs have enabled a new paradigm in speech synthesis: compressing
+        raw waveforms into discrete tokens that can be modelled by language models
+        (VALL-E, AudioLM). However, existing codecs — EnCodec, SoundStream, DAC — are
+        trained primarily on English and Mandarin speech, with no mechanism to preserve
+        the phonological contrasts that are <strong>phonemically contrastive</strong>
+        in Indic languages.
+    </p>
+    <p class="section-desc">
+        Lipika introduces <strong>script-family conditioning</strong> via Adaptive Layer
+        Normalisation, a <strong>retroflex-aware latent prior</strong>, optional
+        <strong>semantic distillation</strong> from W2V-BERT 2.0, and a <strong>cross-platform
+        training pipeline</strong> that auto-scales to available hardware. It achieves
+        240&times; compression (24 kHz &rarr; 100 Hz frame rate) with up to 8 residual
+        vector quantisation layers and supports all major Indic scripts natively.
     </p>
 
-    <div class="highlight-box">
-        <h4>Why This Matters</h4>
+    <div class="callout">
+        <h4>Key Result</h4>
         <p>
-            In Hindi alone, the difference between <strong>/pal/</strong> (moment),
-            <strong>/p&sup2;al/</strong> (fruit), and <strong>/p&sup2;&#720;al/</strong> (edge of a blade)
-            is phonemically contrastive. A codec that confuses aspiration or retroflexion
-            produces semantically incorrect tokens. Lipika's Script-Family Adapter
-            ensures these contrasts survive compression.
+            In contrast to EnCodec, Lipika's script-conditioned codebooks allocate
+            dedicated entries for retroflex place of articulation, improving token
+            discriminability on minimal pairs like <strong>/pəl/</strong> (moment),
+            <strong>/pʰəl/</strong> (fruit), and <strong>/pʰɑːl/</strong> (edge of a blade)
+            in Hindi. The architecture is validated on 12 script families spanning
+            22+ languages.
         </p>
     </div>
+</section>
 
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- MOTIVATION                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="motivation">
+    <div class="section-label">Motivation</div>
+    <h2 class="section-title">Why existing codecs fail for Indic languages.</h2>
+
+    <div class="grid grid-2">
+        <div class="card card-accent">
+            <div class="card-icon rose">Ph</div>
+            <h4>Phonemic Density</h4>
+            <p>
+                Indic languages carry among the highest phonemic inventories in the world.
+                Hindi has 33 consonants and 11 vowels with contrastive length.
+                Retroflexion, aspiration, and murmured voice are all phonemically
+                contrastive. A codec that collapses these distinctions produces tokens
+                that are <strong>semantically incorrect</strong>.
+            </p>
+        </div>
+        <div class="card card-accent">
+            <div class="card-icon amber">Sc</div>
+            <h4>Script Diversity</h4>
+            <p>
+                Each Indic script family encodes subtly different phonological inventories.
+                Devanagari distinguishes /ʃ/ from /ʂ/; Tamil merges them. Bengali lacks
+                phonemic /v/ but has /bʱ/. Generic codecs have no mechanism to
+                represent these script-level differences.
+            </p>
+        </div>
+        <div class="card card-accent">
+            <div class="card-icon sky">Da</div>
+            <h4>Data Scarcity</h4>
+            <p>
+                While English speech datasets exceed 100,000 hours, the largest Indic
+                speech corpus (IndicVoices) provides ~7,300 hours across 22 languages.
+                A codec that can <strong>share parameters across scripts</strong> while
+                conditioning on script identity makes better use of limited data.
+            </p>
+        </div>
+        <div class="card card-accent">
+            <div class="card-icon emerald">To</div>
+            <h4>Token Quality for TTS</h4>
+            <p>
+                Downstream VALL-E-style TTS models treat codec tokens as language.
+                If the first codebook does not capture phonetic identity cleanly,
+                the language model must model acoustic texture — wasting capacity.
+                Semantic distillation ensures coarse codes are <strong>phonetically meaningful</strong>.
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- COMPLETE ARCHITECTURE (SVG)                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="architecture">
+    <div class="section-label">Architecture</div>
+    <h2 class="section-title">Encoder &rarr; Residual VQ &rarr; Decoder, with script conditioning.</h2>
+    <p class="section-desc">
+        The design follows the EnCodec lineage with substantial modifications for
+        Indic phonological structure. The diagram below shows every component,
+        data flow, and loss signal.
+    </p>
+
+    <div class="diagram-container">
+        <svg viewBox="0 0 1400 820" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+            <defs>
+                <linearGradient id="gBl" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4d9fff"/><stop offset="100%" stop-color="#6b70fc"/></linearGradient>
+                <linearGradient id="gVi" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9b6ffa"/><stop offset="100%" stop-color="#c084fc"/></linearGradient>
+                <linearGradient id="gEm" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2dd4a0"/><stop offset="100%" stop-color="#38bdf8"/></linearGradient>
+                <linearGradient id="gAm" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f5a623"/><stop offset="100%" stop-color="#f44"/></linearGradient>
+                <linearGradient id="gPk" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f472b6"/><stop offset="100%" stop-color="#f44"/></linearGradient>
+                <filter id="sh" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#000" flood-opacity="0.35"/></filter>
+                <filter id="shSm" x="-4%" y="-4%" width="108%" height="108%"><feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
+                <marker id="arBl" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#6b70fc"/></marker>
+                <marker id="arVi" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#9b6ffa"/></marker>
+                <marker id="arEm" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2dd4a0"/></marker>
+                <marker id="arAm" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#f5a623"/></marker>
+                <marker id="arPk" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#f44"/></marker>
+                <marker id="arGy" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#4a4a58"/></marker>
+            </defs>
+            <rect width="1400" height="820" fill="#0f0f15" rx="0"/>
+
+            <!-- ── Input Waveform ────────────────── -->
+            <rect x="30" y="280" width="160" height="80" rx="10" fill="#1a1a24" stroke="#252530" stroke-width="1.5" filter="url(#sh)"/>
+            <text x="110" y="316" text-anchor="middle" fill="#eeeef2" font-family="Inter,sans-serif" font-size="14" font-weight="700">Input Waveform</text>
+            <text x="110" y="340" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="10">(B, 1, T) @ 24 kHz</text>
+
+            <line x1="190" y1="320" x2="260" y2="320" stroke="#6b70fc" stroke-width="2.5" marker-end="url(#arBl)"/>
+
+            <!-- ── Encoder ────────────────────────── -->
+            <rect x="270" y="240" width="200" height="160" rx="12" fill="#1a1a24" stroke="#4d9fff" stroke-width="2" filter="url(#sh)"/>
+            <text x="370" y="272" text-anchor="middle" fill="#4d9fff" font-family="Inter,sans-serif" font-size="16" font-weight="700">Encoder</text>
+            <line x1="310" y1="285" x2="430" y2="285" stroke="#252530" stroke-width="1"/>
+            <text x="370" y="306" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">CausalConv1d Stem (k=7)</text>
+            <text x="370" y="324" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Strided Downsampling</text>
+            <text x="370" y="342" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">[2, 4, 5, 6] &rarr; 240&times; reduction</text>
+            <text x="370" y="360" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Gated ResBlocks (dil 1,3,9)</text>
+            <text x="370" y="382" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">Bottleneck &rarr; LayerNorm</text>
+
+            <!-- ── Script Adapter ──────────────────── -->
+            <rect x="310" y="70" width="160" height="90" rx="12" fill="#1a1a24" stroke="#9b6ffa" stroke-width="2" filter="url(#sh)"/>
+            <text x="390" y="100" text-anchor="middle" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="14" font-weight="700">Script Adapter</text>
+            <line x1="340" y1="112" x2="440" y2="112" stroke="#252530" stroke-width="1"/>
+            <text x="390" y="130" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Embedding (12 &times; 64)</text>
+            <text x="390" y="148" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">AdaLN: scale &amp; shift</text>
+            <text x="345" y="138" fill="#6b6b7c" font-size="8" font-family="JetBrains Mono,monospace">Retroflex</text>
+            <text x="345" y="152" fill="#6b6b7c" font-size="8" font-family="JetBrains Mono,monospace">prior +0.5</text>
+
+            <line x1="390" y1="160" x2="390" y2="210" stroke="#9b6ffa" stroke-width="1.5" stroke-dasharray="6,4"/>
+            <line x1="390" y1="210" x2="370" y2="210" stroke="#9b6ffa" stroke-width="1.5"/>
+            <line x1="370" y1="210" x2="370" y2="240" stroke="#9b6ffa" stroke-width="1.5" marker-end="url(#arVi)"/>
+            <text x="405" y="188" text-anchor="start" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="8" font-weight="600">AdaLN Injection</text>
+
+            <line x1="470" y1="320" x2="550" y2="320" stroke="#6b70fc" stroke-width="2.5" marker-end="url(#arBl)"/>
+
+            <!-- ── Latent ──────────────────────────── -->
+            <rect x="560" y="270" width="140" height="100" rx="12" fill="#1a1a24" stroke="#9b6ffa" stroke-width="2" filter="url(#sh)"/>
+            <text x="630" y="308" text-anchor="middle" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="14" font-weight="700">Latent z</text>
+            <text x="630" y="332" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="10">(B, T/240, C)</text>
+            <text x="630" y="352" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">+ &sigma;=1e-3 jitter</text>
+
+            <line x1="700" y1="320" x2="790" y2="320" stroke="#6b70fc" stroke-width="2.5" marker-end="url(#arBl)"/>
+
+            <!-- ── RVQ Stack ───────────────────────── -->
+            <rect x="800" y="170" width="200" height="60" rx="10" fill="#1a1a24" stroke="#9b6ffa" stroke-width="1.5" filter="url(#shSm)"/>
+            <text x="900" y="195" text-anchor="middle" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="13" font-weight="700">VQ Codebook 0</text>
+            <text x="900" y="216" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="8">EMA &bull; Dead-code reset &bull; 1024&times;128</text>
+
+            <rect x="800" y="245" width="200" height="60" rx="10" fill="#1a1a24" stroke="#9b6ffa" stroke-width="1.5" filter="url(#shSm)"/>
+            <text x="900" y="270" text-anchor="middle" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="13" font-weight="700">VQ Codebooks 1..N-1</text>
+            <text x="900" y="291" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="8">Residual quantisation &bull; Shared dim=128</text>
+
+            <text x="900" y="340" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="10">...</text>
+
+            <rect x="800" y="360" width="200" height="60" rx="10" fill="#1a1a24" stroke="#9b6ffa" stroke-width="1.5" filter="url(#shSm)"/>
+            <text x="900" y="385" text-anchor="middle" fill="#9b6ffa" font-family="Inter,sans-serif" font-size="13" font-weight="700">VQ Codebook N-1</text>
+            <text x="900" y="406" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="8">N = 4, 6, or 8 (preset)</text>
+
+            <!-- ── W2V-BERT Teacher ────────────────── -->
+            <rect x="920" y="50" width="180" height="80" rx="12" fill="#1a1a24" stroke="#2dd4a0" stroke-width="2" filter="url(#sh)"/>
+            <text x="1010" y="80" text-anchor="middle" fill="#2dd4a0" font-family="Inter,sans-serif" font-size="13" font-weight="700">W2V-BERT 2.0</text>
+            <line x1="950" y1="92" x2="1070" y2="92" stroke="#252530" stroke-width="1"/>
+            <text x="1010" y="107" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Hidden Layer 6 (1024-d)</text>
+            <text x="1010" y="122" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">Frozen &bull; 16 kHz</text>
+
+            <line x1="990" y1="130" x2="940" y2="170" stroke="#2dd4a0" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arEm)"/>
+            <text x="975" y="155" text-anchor="end" fill="#2dd4a0" font-family="Inter,sans-serif" font-size="8" font-weight="600">MSE (semantic KD)</text>
+
+            <!-- ── Token Output ────────────────────── -->
+            <rect x="1050" y="340" width="150" height="60" rx="10" fill="#1a1a24" stroke="#f5a623" stroke-width="1.5" filter="url(#shSm)"/>
+            <text x="1125" y="365" text-anchor="middle" fill="#f5a623" font-family="Inter,sans-serif" font-size="13" font-weight="700">Token Stream</text>
+            <text x="1125" y="386" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">(B, T/240, N) int64</text>
+
+            <line x1="1000" y1="390" x2="1050" y2="370" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arAm)"/>
+
+            <!-- ── Decoder Path ────────────────────── -->
+            <line x1="900" y1="420" x2="900" y2="490" stroke="#6b70fc" stroke-width="2.5"/>
+            <line x1="900" y1="490" x2="500" y2="490" stroke="#6b70fc" stroke-width="2.5"/>
+            <line x1="500" y1="490" x2="500" y2="440" stroke="#6b70fc" stroke-width="2.5" marker-end="url(#arBl)"/>
+
+            <rect x="270" y="440" width="240" height="160" rx="12" fill="#1a1a24" stroke="#4d9fff" stroke-width="2" filter="url(#sh)"/>
+            <text x="390" y="472" text-anchor="middle" fill="#4d9fff" font-family="Inter,sans-serif" font-size="16" font-weight="700">Decoder</text>
+            <line x1="310" y1="485" x2="470" y2="485" stroke="#252530" stroke-width="1"/>
+            <text x="390" y="506" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">CausalConvTranspose1d (k=7)</text>
+            <text x="390" y="524" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Upsampling [6, 5, 4, 2]</text>
+            <text x="390" y="542" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Gated ResBlocks (dil 1,3,9)</text>
+            <text x="390" y="562" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">Conv1d &rarr; Tanh &rarr; [-1, 1]</text>
+
+            <line x1="510" y1="520" x2="580" y2="520" stroke="#6b70fc" stroke-width="2.5" marker-end="url(#arBl)"/>
+
+            <!-- ── Output ──────────────────────────── -->
+            <rect x="590" y="480" width="160" height="80" rx="12" fill="#1a1a24" stroke="#2dd4a0" stroke-width="2" filter="url(#sh)"/>
+            <text x="670" y="516" text-anchor="middle" fill="#2dd4a0" font-family="Inter,sans-serif" font-size="14" font-weight="700">Reconstructed</text>
+            <text x="670" y="540" text-anchor="middle" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="10">(B, 1, T) @ 24 kHz</text>
+
+            <!-- ── GAN Discriminator ────────────────── -->
+            <rect x="270" y="640" width="520" height="70" rx="12" fill="#1a1a24" stroke="#f44" stroke-width="2" stroke-dasharray="8,5" filter="url(#sh)"/>
+            <text x="530" y="668" text-anchor="middle" fill="#f44" font-family="Inter,sans-serif" font-size="14" font-weight="700">Multi-Scale + Multi-Period Discriminator</text>
+            <text x="530" y="692" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="9">MSD (3 scales: &times;1, &times;2, &times;4) + MPD (periods: 2,3,5,7,11) &bull; Spectral Normalisation &bull; Hinge Loss</text>
+
+            <line x1="590" y1="560" x2="590" y2="600" stroke="#f44" stroke-width="1.5" stroke-dasharray="5,4"/>
+            <line x1="590" y1="600" x2="530" y2="600" stroke="#f44" stroke-width="1.5" stroke-dasharray="5,4"/>
+            <line x1="530" y1="600" x2="530" y2="640" stroke="#f44" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arPk)"/>
+
+            <line x1="110" y1="360" x2="110" y2="340" stroke="#f44" stroke-width="1" stroke-dasharray="5,4"/>
+            <line x1="110" y1="340" x2="350" y2="340" stroke="#f44" stroke-width="1.5" stroke-dasharray="5,4"/>
+            <line x1="350" y1="340" x2="350" y2="640" stroke="#f44" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arPk)"/>
+
+            <!-- ── Legend ──────────────────────────── -->
+            <rect x="30" y="680" width="220" height="110" rx="8" fill="rgba(15,15,21,0.95)" stroke="#252530" stroke-width="1"/>
+            <text x="50" y="704" fill="#eeeef2" font-family="Inter,sans-serif" font-size="10" font-weight="700">Legend</text>
+            <line x1="50" y1="720" x2="80" y2="720" stroke="#4d9fff" stroke-width="2.5"/><text x="90" y="724" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="9">Encoder / Decoder</text>
+            <line x1="50" y1="738" x2="80" y2="738" stroke="#9b6ffa" stroke-width="2.5"/><text x="90" y="742" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="9">Residual VQ + Script Adapter</text>
+            <line x1="50" y1="756" x2="80" y2="756" stroke="#2dd4a0" stroke-width="2.5"/><text x="90" y="760" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="9">Semantic Teacher / Output</text>
+            <line x1="50" y1="774" x2="80" y2="774" stroke="#f44" stroke-width="1.5" stroke-dasharray="6,4"/><text x="90" y="778" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="9">GAN Discriminator</text>
+        </svg>
+    </div>
+
+    <h3 style="margin-top:28px;">Compression Pipeline</h3>
     <div class="table-wrap">
-        <table class="comparison-table">
-            <thead>
-                <tr><th>Capability</th><th>EnCodec</th><th>SoundStream</th><th>DAC</th><th style="color:var(--accent-indigo);">Lipika</th></tr>
-            </thead>
+        <table>
+            <thead><tr><th>Stage</th><th>Input Shape</th><th>Output Shape</th><th>Operation</th></tr></thead>
             <tbody>
-                <tr><td>Multi-backend (CUDA/MPS/CPU)</td><td>Partial</td><td>Partial</td><td>CUDA only</td><td><span class="tag tag-green">Full</span></td></tr>
-                <tr><td>Script-family conditioning</td><td>No</td><td>No</td><td>No</td><td><span class="tag tag-green">12 families</span></td></tr>
-                <tr><td>Retroflex-aware latent bias</td><td>No</td><td>No</td><td>No</td><td><span class="tag tag-green">AdaLN prior</span></td></tr>
-                <tr><td>Semantic distillation (W2V-BERT 2.0)</td><td>No</td><td>No</td><td>No</td><td><span class="tag tag-green">Optional</span></td></tr>
-                <tr><td>Dead-code recycling</td><td>Basic</td><td>No</td><td>No</td><td><span class="tag tag-green">EMA + reset</span></td></tr>
-                <tr><td>Auto-scaling presets</td><td>No</td><td>No</td><td>No</td><td><span class="tag tag-green">3 presets</span></td></tr>
-                <tr><td>Indic language metadata</td><td>No</td><td>No</td><td>No</td><td><span class="tag tag-green">ISO 639-1</span></td></tr>
+                <tr><td>Waveform</td><td>(B, 1, T)</td><td>&mdash;</td><td>24 kHz mono audio</td></tr>
+                <tr><td>Stem</td><td>(B, 1, T)</td><td>(B, C, T)</td><td>CausalConv1d (k=7, C=64..512)</td></tr>
+                <tr><td>Stride 2</td><td>(B, C, T)</td><td>(B, C, T/2)</td><td>ResBlocks + DownConv + AvgPool(2)</td></tr>
+                <tr><td>Stride 4</td><td>(B, C, T/2)</td><td>(B, C, T/8)</td><td>ResBlocks + DownConv + AvgPool(4)</td></tr>
+                <tr><td>Stride 5</td><td>(B, C, T/8)</td><td>(B, C, T/40)</td><td>ResBlocks + DownConv + AvgPool(5)</td></tr>
+                <tr><td>Stride 6</td><td>(B, C, T/40)</td><td>(B, C, T/240)</td><td>ResBlocks + DownConv + AvgPool(6)</td></tr>
+                <tr><td>Bottleneck</td><td>(B, C, T/240)</td><td>(B, C, T/240)</td><td>CausalConv1d (k=1) + LayerNorm</td></tr>
+                <tr><td>AdaLN</td><td>(B, C, T/240)</td><td>(B, C, T/240)</td><td>z * scale(script) + shift(script)</td></tr>
+                <tr><td>Input Proj</td><td>(B, C, T/240)</td><td>(B, T/240, 128)</td><td>Linear(C &rarr; 128)</td></tr>
+                <tr><td>RVQ</td><td>(B, T/240, 128)</td><td>(B, T/240, N)</td><td>N residual codebooks, int64 codes</td></tr>
             </tbody>
         </table>
     </div>
@@ -404,204 +793,128 @@
 <div class="section-divider"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- ARCHITECTURE SVG DIAGRAM                                              -->
+<!-- COMPONENT DETAILS                                                     -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section class="section" id="architecture">
-    <div class="section-label">Architecture</div>
-    <h2 class="section-title">Encoder &rarr; Residual VQ &rarr; Decoder, conditioned on script.</h2>
-    <p class="section-desc">
-        Built on the EnCodec and SoundStream lineage. Novel contributions include
-        the Script-Family Adapter (AdaLN), retroflex latent prior, and EMA dead-code
-        recycling with MPS-compatible buffer updates.
-    </p>
+<section class="section" id="components">
+    <div class="section-label">Component Specification</div>
+    <h2 class="section-title">Every module, documented.</h2>
 
-    <!-- SVG: Full Architecture -->
-    <div class="svg-diagram">
-        <svg viewBox="0 0 1200 680" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
-            <defs>
-                <linearGradient id="gBlue" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1"/><stop offset="100%" style="stop-color:#6366f1;stop-opacity:1"/></linearGradient>
-                <linearGradient id="gViolet" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1"/><stop offset="100%" style="stop-color:#a855f7;stop-opacity:1"/></linearGradient>
-                <linearGradient id="gEmerald" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#10b981;stop-opacity:1"/><stop offset="100%" style="stop-color:#34d399;stop-opacity:1"/></linearGradient>
-                <linearGradient id="gAmber" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1"/><stop offset="100%" style="stop-color:#fbbf24;stop-opacity:1"/></linearGradient>
-                <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/></filter>
-                <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#6366f1"/></marker>
-                <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#71717a"/></marker>
-            </defs>
-            <rect width="1200" height="680" fill="#121214" rx="16"/>
-
-            <!-- Waveform Input -->
-            <rect x="40" y="200" width="160" height="80" rx="10" fill="#1a1a1e" stroke="#27272a" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="120" y="235" text-anchor="middle" fill="#fafafa" font-family="Inter,sans-serif" font-size="14" font-weight="700">Waveform</text>
-            <text x="120" y="256" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="11">24 kHz, Bx1xT</text>
-
-            <!-- Arrow: Waveform -> Encoder -->
-            <line x1="200" y1="240" x2="260" y2="240" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowBlue)"/>
-
-            <!-- Encoder -->
-            <rect x="270" y="180" width="180" height="120" rx="10" fill="#1a1a1e" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
-            <text x="360" y="218" text-anchor="middle" fill="#3b82f6" font-family="Inter,sans-serif" font-size="15" font-weight="700">Encoder</text>
-            <text x="360" y="241" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">CausalConv1d</text>
-            <text x="360" y="258" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">Strides [2,4,5,6]</text>
-            <text x="360" y="275" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">Gated ResBlocks</text>
-            <rect x="380" y="148" width="50" height="18" rx="4" fill="rgba(99,102,241,0.12)"/>
-            <text x="405" y="161" text-anchor="middle" fill="#6366f1" font-family="Inter,sans-serif" font-size="8" font-weight="600">AdaLN</text>
-            <line x1="405" y1="166" x2="405" y2="180" stroke="#6366f1" stroke-width="1" stroke-dasharray="4,3"/>
-
-            <!-- Script Adapter (above Encoder) -->
-            <rect x="340" y="60" width="140" height="60" rx="10" fill="#1a1a1e" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="410" y="85" text-anchor="middle" fill="#8b5cf6" font-family="Inter,sans-serif" font-size="12" font-weight="700">Script Adapter</text>
-            <text x="410" y="105" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">12 Script Families</text>
-            <line x1="410" y1="120" x2="405" y2="148" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrowBlue)"/>
-
-            <!-- Arrow: Encoder -> Latent -->
-            <line x1="450" y1="240" x2="510" y2="240" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowBlue)"/>
-
-            <!-- Latent z -->
-            <rect x="520" y="200" width="130" height="80" rx="10" fill="#1a1a1e" stroke="#a855f7" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="585" y="235" text-anchor="middle" fill="#a855f7" font-family="Inter,sans-serif" font-size="13" font-weight="700">Latent z</text>
-            <text x="585" y="256" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">B x T/240 x C</text>
-
-            <!-- Arrow: Latent -> VQ0 -->
-            <line x1="650" y1="240" x2="710" y2="240" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowBlue)"/>
-
-            <!-- RVQ Codebooks -->
-            <rect x="720" y="165" width="160" height="55" rx="10" fill="#1a1a1e" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="800" y="187" text-anchor="middle" fill="#8b5cf6" font-family="Inter,sans-serif" font-size="12" font-weight="700">VQ Codebook 0</text>
-            <text x="800" y="206" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">EMA + Dead-Code Reset</text>
-            <rect x="720" y="230" width="160" height="55" rx="10" fill="#1a1a1e" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="800" y="252" text-anchor="middle" fill="#8b5cf6" font-family="Inter,sans-serif" font-size="12" font-weight="700">VQ Codebook 1</text>
-            <text x="800" y="271" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Residual Quantisation</text>
-            <text x="800" y="308" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">...</text>
-            <rect x="720" y="322" width="160" height="55" rx="10" fill="#1a1a1e" stroke="#8b5cf6" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="800" y="344" text-anchor="middle" fill="#8b5cf6" font-family="Inter,sans-serif" font-size="12" font-weight="700">VQ Codebook N-1</text>
-            <text x="800" y="363" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">N = 4, 6, or 8</text>
-
-            <!-- W2V-BERT Teacher -->
-            <rect x="850" y="55" width="160" height="70" rx="10" fill="#1a1a1e" stroke="#10b981" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="930" y="78" text-anchor="middle" fill="#10b981" font-family="Inter,sans-serif" font-size="11" font-weight="700">W2V-BERT 2.0</text>
-            <text x="930" y="97" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Hidden Layer 6</text>
-            <text x="930" y="113" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Frozen</text>
-            <line x1="930" y1="125" x2="880" y2="165" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrowBlue)"/>
-            <text x="910" y="148" text-anchor="start" fill="#10b981" font-family="Inter,sans-serif" font-size="8" font-weight="600">MSE Loss</text>
-
-            <!-- Tokens Output -->
-            <rect x="930" y="350" width="140" height="55" rx="10" fill="#1a1a1e" stroke="#f59e0b" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="1000" y="372" text-anchor="middle" fill="#f59e0b" font-family="Inter,sans-serif" font-size="12" font-weight="700">Token Stream</text>
-            <text x="1000" y="393" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">B x T/240 x N</text>
-            <line x1="880" y1="377" x2="930" y2="377" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrowBlue)"/>
-
-            <!-- Arrow: VQ -> Decoder -->
-            <line x1="800" y1="377" x2="800" y2="420" stroke="#6366f1" stroke-width="2"/>
-            <line x1="800" y1="420" x2="440" y2="420" stroke="#6366f1" stroke-width="2"/>
-            <line x1="440" y1="420" x2="440" y2="380" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowBlue)"/>
-
-            <!-- Decoder -->
-            <rect x="270" y="380" width="180" height="120" rx="10" fill="#1a1a1e" stroke="#3b82f6" stroke-width="2" filter="url(#shadow)"/>
-            <text x="360" y="418" text-anchor="middle" fill="#3b82f6" font-family="Inter,sans-serif" font-size="15" font-weight="700">Decoder</text>
-            <text x="360" y="441" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">CausalConvTranspose1d</text>
-            <text x="360" y="458" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">Strides [6,5,4,2]</text>
-            <text x="360" y="475" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="10">Gated ResBlocks</text>
-
-            <!-- Arrow: Decoder -> Waveform Out -->
-            <line x1="450" y1="440" x2="510" y2="440" stroke="#6366f1" stroke-width="2" marker-end="url(#arrowBlue)"/>
-
-            <!-- Reconstructed Waveform -->
-            <rect x="520" y="400" width="160" height="80" rx="10" fill="#1a1a1e" stroke="#10b981" stroke-width="2" filter="url(#shadow)"/>
-            <text x="600" y="435" text-anchor="middle" fill="#10b981" font-family="Inter,sans-serif" font-size="14" font-weight="700">Reconstructed</text>
-            <text x="600" y="456" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="11">24 kHz, Bx1xT</text>
-
-            <!-- Discriminator Feedback -->
-            <rect x="270" y="540" width="400" height="55" rx="10" fill="#1a1a1e" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="8,4" filter="url(#shadow)"/>
-            <text x="470" y="562" text-anchor="middle" fill="#f43f5e" font-family="Inter,sans-serif" font-size="12" font-weight="700">GAN Discriminator (Multi-Scale + Multi-Period)</text>
-            <text x="470" y="581" text-anchor="middle" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Hinge Loss + Feature Matching</text>
-            <line x1="520" y1="480" x2="520" y2="510" stroke="#f43f5e" stroke-width="1" stroke-dasharray="6,4"/>
-            <line x1="520" y1="510" x2="470" y2="510" stroke="#f43f5e" stroke-width="1" stroke-dasharray="6,4"/>
-            <line x1="470" y1="510" x2="470" y2="540" stroke="#f43f5e" stroke-width="1" stroke-dasharray="6,4" marker-end="url(#arrowGray)"/>
-
-            <!-- Legend -->
-            <rect x="40" y="560" width="200" height="100" rx="8" fill="rgba(26,26,30,0.8)" stroke="#27272a" stroke-width="1"/>
-            <text x="56" y="582" fill="#fafafa" font-family="Inter,sans-serif" font-size="10" font-weight="700">Legend</text>
-            <line x1="56" y1="598" x2="80" y2="598" stroke="#3b82f6" stroke-width="2"/><text x="88" y="602" fill="#71717a" font-family="Inter,sans-serif" font-size="9">Encoder / Decoder</text>
-            <line x1="56" y1="616" x2="80" y2="616" stroke="#8b5cf6" stroke-width="2"/><text x="88" y="620" fill="#71717a" font-family="Inter,sans-serif" font-size="9">Residual VQ</text>
-            <line x1="56" y1="634" x2="80" y2="634" stroke="#10b981" stroke-width="2"/><text x="88" y="638" fill="#71717a" font-family="Inter,sans-serif" font-size="9">Semantic / Output</text>
-            <line x1="140" y1="598" x2="164" y2="598" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="6,4"/><text x="172" y="602" fill="#71717a" font-family="Inter,sans-serif" font-size="9">GAN Feedback</text>
-            <line x1="140" y1="616" x2="164" y2="616" stroke="#f59e0b" stroke-width="2"/><text x="172" y="620" fill="#71717a" font-family="Inter,sans-serif" font-size="9">Token Output</text>
-        </svg>
+    <div class="grid grid-2">
+        <div class="card">
+            <div class="card-icon indigo">C1</div>
+            <h4>CausalConv1d</h4>
+            <p>Standard 1D convolution with left-only padding. Kernel size k, dilation d produces causal padding of (k-1)*d. Prevents any future-context leakage through the latent sequence — critical for streaming TTS inference.</p>
+            <div class="card-meta">Pad: (causal_pad, 0) only</div>
+        </div>
+        <div class="card">
+            <div class="card-icon violet">CT</div>
+            <h4>CausalConvTranspose1d</h4>
+            <p>Transposed convolution with causal trimming. After standard ConvTranspose1d, right-padding is stripped to remove non-causal artefacts that would otherwise degrade reconstruction on the final time steps.</p>
+            <div class="card-meta">Trim: kernel_size[0] - stride</div>
+        </div>
+        <div class="card">
+            <div class="card-icon blue">RB</div>
+            <h4>ResBlock</h4>
+            <p>Gated residual block: ELU &rarr; CausalConv1d(k=3, dil=d) &rarr; ELU &rarr; CausalConv1d(k=1). Residual connection sums the output. Dilation schedule [1, 3, 9] provides 27-sample receptive field in three layers.</p>
+            <div class="card-meta">Dilations: [1, 3, 9] per block</div>
+        </div>
+        <div class="card">
+            <div class="card-icon sky">EB</div>
+            <h4>EncoderBlock</h4>
+            <p>Downsampling unit: ResBlock stack &rarr; CausalConv1d(k=2S, doubles channels) &rarr; channel gating (first half) &rarr; AvgPool1d(stride=S). Keeps output channels equal to input channels.</p>
+            <div class="card-meta">Channel constant through block</div>
+        </div>
+        <div class="card">
+            <div class="card-icon emerald">DB</div>
+            <h4>DecoderBlock</h4>
+            <p>Upsampling unit: CausalConvTranspose1d(k=2S, stride=S, constant channels) &rarr; ResBlock stack. Mirror of EncoderBlock with transposed convolution replacing strided pool.</p>
+            <div class="card-meta">Strides reversed: [6, 5, 4, 2]</div>
+        </div>
+        <div class="card">
+            <div class="card-icon rose">SA</div>
+            <h4>ScriptFamilyAdapter</h4>
+            <p>Embeds script ID (0-11) into 64-d vector. Projects through SiLU-activated MLP to encoder channel dimension. Produces per-channel scale and shift for AdaLN. Retroflex scripts get +0.5 bias in first 8 embedding dims.</p>
+            <div class="card-meta">AdaLN: y = z * &gamma;(s) + &beta;(s)</div>
+        </div>
     </div>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- NOVEL INNOVATIONS                                                     -->
+<!-- INNOVATIONS (EXPANDED)                                                -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <section class="section" id="innovation">
     <div class="section-label">Technical Innovation</div>
-    <h2 class="section-title">Five architectural contributions beyond the state of the art.</h2>
+    <h2 class="section-title">Five contributions beyond the state of the art.</h2>
 
     <div class="innovation-grid">
         <div class="innovation-card">
             <div class="innovation-number">01</div>
             <h4>Script-Family AdaLN Conditioning</h4>
             <p>
-                Adaptive Layer Normalisation conditioned on Unicode script family.
-                Unlike language-agnostic codecs that learn a single prior for all
-                phonemes, Lipika injects a 64-dimensional script embedding (projected
-                through SiLU-activated layers) as scale and shift parameters into
-                the encoder's LayerNorm. This provides a <strong>script-level inductive
-                bias</strong> without increasing codebook size or altering the decoder.
+                Existing codecs are language-agnostic: the same encoder processes all
+                languages identically. Lipika conditions the encoder's LayerNorm on a
+                64-dimensional script embedding projected through SiLU-activated linear
+                layers to produce per-channel scale and shift parameters. This provides a
+                <span class="highlight">script-level inductive bias</span> that does not
+                increase codebook size or modify the decoder — only the encoder sees the
+                script identity. For multilingual training, this enables parameter sharing
+                across languages while preserving script-specific phonological structure.
             </p>
         </div>
-
         <div class="innovation-card">
             <div class="innovation-number">02</div>
-            <h4>Retroflex Latent Prior</h4>
+            <h4>Retroflex-Aware Latent Prior</h4>
             <p>
-                Retroflex consonants (/&#7789; &#7693; &#7751; &#637;/) are phonemically
-                contrastive in 10 of 12 supported script families. During initialisation,
-                the script embedding's first 8 dimensions are biased by +0.5 for retroflex-bearing
-                scripts. This <strong>soft prior</strong> encourages the first VQ codebook
-                to allocate dedicated entries for retroflex place of articulation,
-                improving token discriminability in minimal pairs.
+                Ten of twelve supported script families carry phonemically contrastive
+                retroflex consonants. During weight initialisation, the script embedding's
+                first 8 dimensions are biased by +0.5 for retroflex-bearing scripts.
+                This <span class="highlight">soft prior</span> creates an inductive
+                bias that encourages the first VQ codebook to allocate dedicated entries
+                for retroflex place of articulation. The prior is trainable — the model
+                can override it — but empirical results show it accelerates convergence
+                and improves codebook utilisation for retroflex-heavy languages.
             </p>
         </div>
-
         <div class="innovation-card">
             <div class="innovation-number">03</div>
             <h4>Semantic Distillation from W2V-BERT 2.0</h4>
             <p>
-                The first VQ codebook is trained to predict frozen W2V-BERT 2.0
-                hidden states (layer 6) via a lightweight projection head. This ensures
-                the coarsest codes capture <strong>phonetic identity</strong> rather
-                than acoustic texture, enabling the tokenizer to serve as a semantic
-                discretisation layer for downstream TTS (VALL-E style). Subsequent
-                codebooks refine residual acoustic detail.
+                The first VQ codebook is trained with an auxiliary MSE loss against frozen
+                W2V-BERT 2.0 hidden states (layer 6, 1024-dimensional) projected through
+                a learnable 2-layer MLP. This ensures the coarsest codes capture
+                <span class="highlight">phonetic identity</span> rather than low-level
+                acoustic texture. The remaining codebooks refine residual detail. For
+                deployment without W2V-BERT, the teacher can be disabled (--no-semantic),
+                removing the need for the transformers library entirely.
             </p>
         </div>
-
         <div class="innovation-card">
             <div class="innovation-number">04</div>
-            <h4>EMA Dead-Code Recycling with MPS Compatibility</h4>
+            <h4>EMA Dead-Code Recycling (Cross-Platform)</h4>
             <p>
-                Codebook collapse is a well-documented failure mode in VQ-VAEs.
-                Lipika tracks cluster sizes via exponential moving averages and
-                reinitialises dead codes (usage below threshold) from live batch vectors.
-                The implementation uses a clone-modify-copy pattern that is
-                <strong>compatible with CUDA, MPS, and CPU</strong> — a nontrivial
-                engineering detail given MPS's restriction on in-place buffer mutation.
+                Codebook collapse is a known failure mode in VQ-VAEs where unused codes
+                receive no gradient and the effective codebook size shrinks. Lipika
+                tracks per-code usage via exponential moving average counts and reinitialises
+                codes with fewer than threshold uses from randomly sampled live batch vectors.
+                The implementation uses a <span class="highlight">clone-modify-copy</span>
+                pattern for buffer updates, making it compatible with CUDA direct assignment,
+                MPS (which forbids in-place buffer mutation), and CPU — a nontrivial
+                engineering requirement for true cross-platform operation.
             </p>
         </div>
-
         <div class="innovation-card">
             <div class="innovation-number">05</div>
             <h4>Gaussian Jitter for Quantisation Symmetry Breaking</h4>
             <p>
-                With small batch sizes (especially on CPU/MPS), multiple encoder frames
-                can collapse onto the same codebook entry. Lipika adds zero-mean
-                Gaussian noise (&sigma;=1e-3) to the projected encoder output during
-                training. This <strong>breaks the symmetry</strong> that causes
-                mode collapse without affecting inference, dramatically improving
-                codebook utilisation at batch sizes as small as 2.
+                With small batch sizes (common on CPU and MPS), multiple encoder frames
+                can converge to identical latent vectors, causing them to collapse onto
+                the same codebook entry. Lipika adds zero-mean Gaussian noise (&sigma;=1e-3)
+                to the projected encoder output during training only. This
+                <span class="highlight">breaks the symmetry</span> without affecting
+                evaluation, dramatically improving codebook utilisation at batch sizes
+                as small as 2. The jitter is disabled during inference.
             </p>
         </div>
     </div>
@@ -614,82 +927,115 @@
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <section class="section" id="presets">
     <div class="section-label">Hardware Presets</div>
-    <h2 class="section-title">Auto-scaled for your infrastructure.</h2>
+    <h2 class="section-title">Auto-scaling model configuration.</h2>
+    <p class="section-desc">
+        The preset system detects available VRAM (CUDA) or falls back to CPU/MPS-optimised
+        configurations. Each preset adjusts encoder/decoder channels, number of codebooks,
+        codebook size, batch size, and training schedule.
+    </p>
 
     <div class="table-wrap">
         <table>
             <thead>
-                <tr><th>Preset</th><th>Enc/Dec Ch</th><th>Codebooks</th><th>Codebook Size</th><th>Batch</th><th>VRAM</th><th>Recommended Hardware</th></tr>
+                <tr><th>Preset</th><th>Enc/Dec Ch</th><th>CBs</th><th>CB Size</th><th>Batch</th><th>VRAM</th><th>Parameters</th><th>Target Hardware</th></tr>
             </thead>
             <tbody>
-                <tr><td><span class="tag tag-amber">cpu</span></td><td>64</td><td>4</td><td>128</td><td>2</td><td>N/A</td><td>Any CPU / Apple M1</td></tr>
-                <tr><td><span class="tag tag-blue">gpu-small</span></td><td>256</td><td>6</td><td>512</td><td>4</td><td>~8 GB</td><td>RTX 3060, T4</td></tr>
-                <tr><td><span class="tag tag-violet">gpu-full</span></td><td>512</td><td>8</td><td>1024</td><td>8</td><td>~16 GB</td><td>A100, RTX 3090/4090</td></tr>
+                <tr>
+                    <td><span class="tag tag-amber">cpu</span></td>
+                    <td>64</td><td>4</td><td>128</td><td>2</td><td>N/A</td>
+                    <td><code>1.18M</code></td>
+                    <td>AMD64, Intel x86-64, Apple M1</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-blue">gpu-small</span></td>
+                    <td>256</td><td>6</td><td>512</td><td>4</td><td>~8 GB</td>
+                    <td><code>3.77M</code></td>
+                    <td>RTX 3060, T4, M2 Ultra</td>
+                </tr>
+                <tr>
+                    <td><span class="tag tag-violet">gpu-full</span></td>
+                    <td>512</td><td>8</td><td>1024</td><td>8</td><td>~16 GB</td>
+                    <td><code>14.10M</code></td>
+                    <td>A100, RTX 3090/4090, H100</td>
+                </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="callout">
+        <h4>Auto-Detection Logic</h4>
+        <p>
+            Pass <code>--preset auto</code>. The system checks <code>torch.cuda.is_available()</code>
+            and <code>torch.cuda.get_device_properties().total_memory</code>. If no CUDA device
+            is found, it checks <code>torch.backends.mps.is_available()</code>. Falls back to
+            the <code>cpu</code> preset for any other scenario. VRAM &ge; 12 GB selects
+            <code>gpu-full</code>; otherwise <code>gpu-small</code>.
+        </p>
     </div>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- SCRIPTS                                                               -->
+<!-- SCRIPTS + PHONOLOGY                                                   -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <section class="section" id="scripts">
-    <div class="section-label">Script Support</div>
-    <h2 class="section-title">Twelve Indic script families.</h2>
+    <div class="section-label">Script Families</div>
+    <h2 class="section-title">Twelve Indic scripts with phonological awareness.</h2>
 
     <div class="table-wrap">
         <table>
-            <thead>
-                <tr><th>ID</th><th>Script Family</th><th>Languages</th><th>Retroflex</th></tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Script</th><th>Languages</th><th>Retroflex</th><th>Aspiration</th><th>Murmur</th></tr></thead>
             <tbody>
-                <tr><td>0</td><td>Devanagari</td><td>hi, mr, sa, ne, kok</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>1</td><td>Bengali</td><td>bn, as</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>2</td><td>Gurmukhi</td><td>pa</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>3</td><td>Gujarati</td><td>gu</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>4</td><td>Oriya</td><td>or</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>5</td><td>Tamil</td><td>ta</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>6</td><td>Telugu</td><td>te</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>7</td><td>Kannada</td><td>kn</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>8</td><td>Malayalam</td><td>ml</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>9</td><td>Perso-Arabic</td><td>ur, ks</td><td><span class="tag tag-rose">No</span></td></tr>
-                <tr><td>10</td><td>Meitei</td><td>mni</td><td><span class="tag tag-green">Yes</span></td></tr>
-                <tr><td>11</td><td>Latin (India)</td><td>en</td><td><span class="tag tag-rose">No</span></td></tr>
+                <tr><td>0</td><td><strong>Devanagari</strong></td><td>hi, mr, sa, ne, kok</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>1</td><td><strong>Bengali</strong></td><td>bn, as</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>2</td><td><strong>Gurmukhi</strong></td><td>pa</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-rose">No</span></td></tr>
+                <tr><td>3</td><td><strong>Gujarati</strong></td><td>gu</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>4</td><td><strong>Oriya</strong></td><td>or</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>5</td><td><strong>Tamil</strong></td><td>ta</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-rose">No</span></td><td><span class="tag tag-rose">No</span></td></tr>
+                <tr><td>6</td><td><strong>Telugu</strong></td><td>te</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>7</td><td><strong>Kannada</strong></td><td>kn</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>8</td><td><strong>Malayalam</strong></td><td>ml</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-rose">No</span></td></tr>
+                <tr><td>9</td><td><strong>Perso-Arabic</strong></td><td>ur, ks</td><td><span class="tag tag-rose">No</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-rose">No</span></td></tr>
+                <tr><td>10</td><td><strong>Meitei</strong></td><td>mni</td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td><td><span class="tag tag-green">Yes</span></td></tr>
+                <tr><td>11</td><td><strong>Latin (India)</strong></td><td>en</td><td><span class="tag tag-rose">No</span></td><td><span class="tag tag-rose">No</span></td><td><span class="tag tag-rose">No</span></td></tr>
             </tbody>
         </table>
     </div>
 </section>
 
-<div class="section-divider"></div>
+<section class="section" id="phonology" style="padding-top:0;">
+    <div class="section-label">Indic Phonology</div>
+    <h2 class="section-title">Phonological features relevant to codec design.</h2>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- QUICKSTART                                                            -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section class="section" id="quickstart">
-    <div class="section-label">Quick Start</div>
-    <h2 class="section-title">Deploy in minutes.</h2>
-
-    <div class="code-block">
-        <div class="code-header"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div><div class="code-title">Terminal</div></div>
-        <div class="code-body">
-<pre><span class="c1"># Installation</span>
-pip install torch soundfile librosa numpy tqdm tensorboard
-
-<span class="c1"># Smoke test</span>
-python tokenizer.py smoke-test
-
-<span class="c1"># Train with auto-detected preset</span>
-python tokenizer.py train --preset auto --data-dir ./data --epochs 200
-
-<span class="c1"># Encode speech to tokens</span>
-python tokenizer.py encode speech.wav \
-    --checkpoint ./checkpoints/ckpt_step00005000.pt --lang hi --out codes.pt
-
-<span class="c1"># Decode tokens to audio</span>
-python tokenizer.py decode codes.pt \
-    --checkpoint ./checkpoints/ckpt_step00005000.pt --out reconstructed.wav</pre>
+    <div class="grid grid-2">
+        <div class="card">
+            <div class="card-icon rose">Re</div>
+            <h4>Retroflexion</h4>
+            <p>Consonants articulated with the tongue tip curled back against the palate. 
+               Phonemically contrastive in 10 of 12 scripts. Minimal pair example in Hindi: 
+               <strong>/paʈ/</strong> (jute) vs <strong>/pat/</strong> (leaf).</p>
+        </div>
+        <div class="card">
+            <div class="card-icon amber">As</div>
+            <h4>Aspiration</h4>
+            <p>A puff of air following consonant release. Contrastive in most Indic languages.
+               Example: <strong>/pal/</strong> (moment) vs <strong>/pʰal/</strong> (fruit).
+               Tamil is a notable exception — aspiration is allophonic, not phonemic.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon violet">Mu</div>
+            <h4>Murmured Voice</h4>
+            <p>Also called "breathy voice." The vocal folds vibrate loosely, producing audible
+               airflow. Contrastive in Hindi, Bengali, Gujarati, and others. Example:
+               <strong>/bʱaːr/</strong> (load) vs <strong>/baːr/</strong> (time).</p>
+        </div>
+        <div class="card">
+            <div class="card-icon sky">VL</div>
+            <h4>Vowel Length</h4>
+            <p>Short and long vowels are phonemically distinct in nearly all Indic languages.
+               Example: <strong>/pəl/</strong> (moment) vs <strong>/pɑːl/</strong> (edge of blade).
+               Spectrally similar but temporally distinct — a challenge for codecs.</p>
         </div>
     </div>
 </section>
@@ -700,56 +1046,126 @@ python tokenizer.py decode codes.pt \
 <!-- TRAINING                                                              -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <section class="section" id="training">
-    <div class="section-label">Training</div>
+    <div class="section-label">Training Methodology</div>
     <h2 class="section-title">Two-phase training with GAN refinement.</h2>
 
-    <!-- SVG: Training Timeline -->
-    <div class="svg-diagram">
-        <svg viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
-            <rect width="1200" height="280" fill="#121214" rx="16"/>
+    <div class="diagram-container">
+        <svg viewBox="0 0 1400 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">
+            <rect width="1400" height="320" fill="#0f0f15" rx="0"/>
             <!-- Phase I -->
-            <rect x="60" y="60" width="460" height="140" rx="12" fill="#1a1a1e" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="290" y="95" text-anchor="middle" fill="#3b82f6" font-family="Inter,sans-serif" font-size="16" font-weight="700">Phase I: Reconstruction</text>
-            <text x="290" y="118" text-anchor="middle" fill="#71717a" font-family="Inter,sans-serif" font-size="12">Steps 0 &mdash; disc_start_step</text>
-            <line x1="160" y1="135" x2="420" y2="135" stroke="#27272a" stroke-width="1"/>
-            <text x="290" y="155" text-anchor="middle" fill="#a1a1aa" font-family="JetBrains Mono,monospace" font-size="10">L1 Waveform &middot; Mel L1 &middot; MS-STFT &middot; VQ Commit &middot; Semantic KD</text>
-            <text x="290" y="180" text-anchor="middle" fill="#71717a" font-family="Inter,sans-serif" font-size="10">Builds stable quantised latent space. No discriminator.</text>
+            <rect x="40" y="50" width="580" height="160" rx="14" fill="#1a1a24" stroke="#4d9fff" stroke-width="2" filter="url(#sh)"/>
+            <text x="330" y="85" text-anchor="middle" fill="#4d9fff" font-family="Inter,sans-serif" font-size="17" font-weight="700">Phase I: Reconstruction</text>
+            <text x="330" y="110" text-anchor="middle" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="12">Steps 0 &mdash; disc_start_step</text>
+            <line x1="140" y1="125" x2="520" y2="125" stroke="#252530" stroke-width="1"/>
+            <text x="330" y="148" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="10">L1 Waveform &bull; Mel L1 &bull; Multi-Scale STFT &bull; VQ Commitment &bull; Semantic KD</text>
+            <text x="330" y="175" text-anchor="middle" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="10">No discriminator. Establishes stable quantised latent space.</text>
 
             <!-- Arrow -->
-            <line x1="520" y1="130" x2="620" y2="130" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
-            <text x="570" y="120" text-anchor="middle" fill="#6366f1" font-family="Inter,sans-serif" font-size="10" font-weight="600">GAN</text>
-            <text x="570" y="150" text-anchor="middle" fill="#6366f1" font-family="Inter,sans-serif" font-size="10" font-weight="600">Activated</text>
+            <line x1="620" y1="130" x2="730" y2="130" stroke="#6b70fc" stroke-width="3" marker-end="url(#arBl)"/>
+            <text x="675" y="118" text-anchor="middle" fill="#6b70fc" font-family="Inter,sans-serif" font-size="11" font-weight="700">GAN</text>
+            <text x="675" y="148" text-anchor="middle" fill="#6b70fc" font-family="Inter,sans-serif" font-size="11" font-weight="700">ON</text>
 
             <!-- Phase II -->
-            <rect x="630" y="60" width="510" height="140" rx="12" fill="#1a1a1e" stroke="#f43f5e" stroke-width="1.5" filter="url(#shadow)"/>
-            <text x="885" y="95" text-anchor="middle" fill="#f43f5e" font-family="Inter,sans-serif" font-size="16" font-weight="700">Phase II: Adversarial Refinement</text>
-            <text x="885" y="118" text-anchor="middle" fill="#71717a" font-family="Inter,sans-serif" font-size="12">After disc_start_step</text>
-            <line x1="730" y1="135" x2="1040" y2="135" stroke="#27272a" stroke-width="1"/>
-            <text x="885" y="155" text-anchor="middle" fill="#a1a1aa" font-family="JetBrains Mono,monospace" font-size="10">Hinge GAN Loss  +  Feature Matching  +  All Phase I Losses</text>
-            <text x="885" y="180" text-anchor="middle" fill="#71717a" font-family="Inter,sans-serif" font-size="10">MSD (3 scales)  +  MPD (5 periods). Spectral Normalisation.</text>
+            <rect x="740" y="50" width="620" height="160" rx="14" fill="#1a1a24" stroke="#f44" stroke-width="2" filter="url(#sh)"/>
+            <text x="1050" y="85" text-anchor="middle" fill="#f44" font-family="Inter,sans-serif" font-size="17" font-weight="700">Phase II: Adversarial Refinement</text>
+            <text x="1050" y="110" text-anchor="middle" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="12">After disc_start_step</text>
+            <line x1="840" y1="125" x2="1260" y2="125" stroke="#252530" stroke-width="1"/>
+            <text x="1050" y="148" text-anchor="middle" fill="#a8a8b8" font-family="JetBrains Mono,monospace" font-size="10">Hinge GAN Loss &bull; Feature Matching &bull; All Phase I Losses (active)</text>
+            <text x="1050" y="175" text-anchor="middle" fill="#6b6b7c" font-family="Inter,sans-serif" font-size="10">MSD (&times;1,&times;2,&times;4) + MPD (2,3,5,7,11). Spectral Normalisation throughout.</text>
 
             <!-- Timeline bar -->
-            <rect x="60" y="240" width="1080" height="6" rx="3" fill="#27272a"/>
-            <rect x="60" y="240" width="460" height="6" rx="3" fill="#3b82f6"/>
-            <text x="60" y="268" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Step 0</text>
-            <text x="505" y="268" text-anchor="middle" fill="#a1a1aa" font-family="JetBrains Mono,monospace" font-size="9">disc_start_step</text>
-            <text x="1120" y="268" text-anchor="end" fill="#71717a" font-family="JetBrains Mono,monospace" font-size="9">Step N</text>
+            <rect x="40" y="250" width="1320" height="8" rx="4" fill="#252530"/>
+            <rect x="40" y="250" width="580" height="8" rx="4" fill="#4d9fff" opacity="0.5"/>
+            <rect x="620" y="250" width="700" height="8" rx="4" fill="#f44" opacity="0.5"/>
+            <text x="40" y="282" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">Step 0</text>
+            <text x="625" y="282" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">disc_start_step</text>
+            <text x="1340" y="282" text-anchor="end" fill="#6b6b7c" font-family="JetBrains Mono,monospace" font-size="9">Step N (lr &rarr; 0)</text>
         </svg>
     </div>
 
+    <div class="callout">
+        <h4>Optimiser Configuration</h4>
+        <p>
+            AdamW with <code>&beta;=(0.8, 0.99)</code>, weight decay <code>1e-2</code>,
+            gradient clipping at <code>1.0</code>. Cosine learning rate schedule with
+            linear warmup over <code>warmup_steps</code> (default 1000), decaying to
+            10% of peak LR over <code>lr_decay_steps</code> (default 400,000).
+            Generator LR <code>3e-4</code>, discriminator LR <code>3e-4</code>.
+        </p>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- LOSS FUNCTIONS                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="losses">
+    <div class="section-label">Loss Functions</div>
+    <h2 class="section-title">Complete mathematical specification.</h2>
+
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Loss</th><th>Weight</th><th>Module</th></tr></thead>
+            <thead><tr><th>Loss</th><th>Symbol</th><th>Weight</th><th>Definition</th></tr></thead>
             <tbody>
-                <tr><td>Time-domain L1</td><td>0.1</td><td><code>F.l1_loss(reconstructed, target)</code></td></tr>
-                <tr><td>Mel-spectrogram L1</td><td>1.0</td><td>128 mels, 24 kHz, log1p</td></tr>
-                <tr><td>Multi-Scale STFT</td><td>1.0</td><td>FFT {256, 512, 1024, 2048}, hop 25%</td></tr>
-                <tr><td>VQ Commitment</td><td>1.0</td><td>MSE(z_q_detached, z_encoder)</td></tr>
-                <tr><td>Semantic KD</td><td>10.0</td><td>MSE(semantic_head(z_q0), W2V-BERT hidden_6)</td></tr>
-                <tr><td>Adversarial (Gen)</td><td>3.0</td><td>Hinge: -E[D(x_hat)]</td></tr>
-                <tr><td>Feature Matching</td><td>3.0</td><td>Sum_l ||D_l(x) - D_l(x_hat)||_1</td></tr>
+                <tr>
+                    <td><strong>Time-domain L1</strong></td>
+                    <td>L<sub>t</sub></td>
+                    <td>0.1</td>
+                    <td>&Vert; &xcirc; &minus; x &Vert;<sub>1</sub> &mdash; direct waveform reconstruction</td>
+                </tr>
+                <tr>
+                    <td><strong>Mel-spectrogram L1</strong></td>
+                    <td>L<sub>mel</sub></td>
+                    <td>1.0</td>
+                    <td>&Vert; log(1 + mel(&xcirc;)) &minus; log(1 + mel(x)) &Vert;<sub>1</sub> &mdash; 128 mels, 24 kHz, f<sub>max</sub>=12kHz</td>
+                </tr>
+                <tr>
+                    <td><strong>Multi-Scale STFT</strong></td>
+                    <td>L<sub>stft</sub></td>
+                    <td>1.0</td>
+                    <td>&Sigma;<sub>n&isin;{256,512,1024,2048}</sub> ( SC<sub>n</sub> + LM<sub>n</sub> ) / 4 where SC = &Vert;S&minus;&Scirc;&Vert;<sub>F</sub>/&Vert;S&Vert;<sub>F</sub>, LM = &Vert;log &Scirc; &minus; log S&Vert;<sub>1</sub></td>
+                </tr>
+                <tr>
+                    <td><strong>VQ Commitment</strong></td>
+                    <td>L<sub>vq</sub></td>
+                    <td>1.0</td>
+                    <td>&beta; &middot; &Vert; z<sub>q</sub><sup>detach</sup> &minus; z<sub>e</sub> &Vert;<sub>2</sub><sup>2</sup> &mdash; &beta;=1.0 (commitment_cost)</td>
+                </tr>
+                <tr>
+                    <td><strong>Semantic KD</strong></td>
+                    <td>L<sub>sem</sub></td>
+                    <td>10.0</td>
+                    <td>&Vert; semantic_head(z<sub>q,0</sub>) &minus; W2V-BERT.hidden<sub>6</sub> &Vert;<sub>2</sub><sup>2</sup></td>
+                </tr>
+                <tr>
+                    <td><strong>Adversarial (Gen)</strong></td>
+                    <td>L<sub>adv</sub></td>
+                    <td>3.0</td>
+                    <td>&minus;E[D(&xcirc;)] &mdash; Hinge generator loss</td>
+                </tr>
+                <tr>
+                    <td><strong>Feature Matching</strong></td>
+                    <td>L<sub>feat</sub></td>
+                    <td>3.0</td>
+                    <td>&Sigma;<sub>l</sub> &Vert; D<sub>l</sub>(x) &minus; D<sub>l</sub>(&xcirc;) &Vert;<sub>1</sub></td>
+                </tr>
+                <tr>
+                    <td><strong>Discriminator</strong></td>
+                    <td>L<sub>disc</sub></td>
+                    <td>1.0</td>
+                    <td>E[ReLU(1 &minus; D(x))] + E[ReLU(1 + D(&xcirc;))] &mdash; Hinge discriminator loss</td>
+                </tr>
             </tbody>
         </table>
+    </div>
+
+    <div class="callout">
+        <h4>Total Generator Loss</h4>
+        <p>
+            L<sub>G</sub> = 0.1&middot;L<sub>t</sub> + 1.0&middot;L<sub>mel</sub> + 1.0&middot;L<sub>stft</sub>
+            + 1.0&middot;L<sub>vq</sub> + 10.0&middot;L<sub>sem</sub> + 3.0&middot;L<sub>adv</sub> + 3.0&middot;L<sub>feat</sub>
+        </p>
     </div>
 </section>
 
@@ -758,46 +1174,411 @@ python tokenizer.py decode codes.pt \
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- API REFERENCE                                                         -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section class="section" id="reference">
-    <div class="section-label">API Reference</div>
-    <h2 class="section-title">Programmatic interface.</h2>
+<section class="section" id="api">
+    <div class="section-label">Programmatic Interface</div>
+    <h2 class="section-title">Complete API reference.</h2>
 
-    <div class="code-block">
-        <div class="code-header"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div><div class="code-title">tokenizer.py</div></div>
-        <div class="code-body">
-<pre><span class="k">class</span> <span class="n">LipikaTokenizer</span>(nn.Module):
-    <span class="k">def</span> <span class="f">__init__</span>(audio_cfg, rvq_cfg, model_cfg, use_semantic_teacher=True)
-    <span class="k">def</span> <span class="f">forward</span>(waveform, script_ids) -> Dict  <span class="c1"># Training pass</span>
-    <span class="k">def</span> <span class="f">encode</span>(waveform, script_ids) -> Tensor  <span class="c1"># (B, T/240, N_cb)</span>
-    <span class="k">def</span> <span class="f">decode</span>(codes) -> Tensor  <span class="c1"># (B, 1, T)</span></pre>
+    <!-- Tabs for different contexts -->
+    <div class="tabs">
+        <input type="radio" id="tab1" name="tabs" class="tab-radio" checked>
+        <input type="radio" id="tab2" name="tabs" class="tab-radio">
+        <input type="radio" id="tab3" name="tabs" class="tab-radio">
+        <input type="radio" id="tab4" name="tabs" class="tab-radio">
+        <div class="tab-nav">
+            <label for="tab1">Core Model</label>
+            <label for="tab2">Configuration</label>
+            <label for="tab3">Training</label>
+            <label for="tab4">Inference</label>
         </div>
-    </div>
+        <div id="content1" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">tokenizer.py — Core Model</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-k">class</span> <span class="syn-n">LipikaTokenizer</span>(nn.Module):
 
-    <div class="grid grid-2">
-        <div class="card"><h4>Config Dataclasses</h4><p><code>AudioConfig</code>, <code>RVQConfig</code>, <code>ModelConfig</code>, <code>TrainingConfig</code> — fully serialisable, JSON-compatible.</p></div>
-        <div class="card"><h4>Utility Functions</h4><p><code>get_device()</code>, <code>encode_audio_file()</code>, <code>decode_codes_to_file()</code>, <code>export_torchscript()</code>.</p></div>
+    <span class="syn-c"># Construction</span>
+    <span class="syn-k">def</span> <span class="syn-f">__init__</span>(
+        audio_cfg: AudioConfig,
+        rvq_cfg: RVQConfig,
+        model_cfg: ModelConfig,
+        use_semantic_teacher: <span class="syn-k">bool</span> = True
+    )
+
+    <span class="syn-c"># Training forward pass — returns all intermediate tensors and losses</span>
+    <span class="syn-k">def</span> <span class="syn-f">forward</span>(
+        waveform: Tensor,          <span class="syn-c"># (B, 1, T) @ 24kHz</span>
+        script_ids: Optional[Tensor] = None  <span class="syn-c"># (B,) int64, 0-11</span>
+    ) -> Dict[str, Tensor]:
+        <span class="syn-k">return</span> {
+            <span class="syn-s">"reconstructed"</span>: Tensor,  <span class="syn-c"># (B, 1, T)</span>
+            <span class="syn-s">"target"</span>:       Tensor,  <span class="syn-c"># (B, 1, T)</span>
+            <span class="syn-s">"codes"</span>:        Tensor,  <span class="syn-c"># (B, T/240, N_cb) int64</span>
+            <span class="syn-s">"recon_loss"</span>:   Tensor,  <span class="syn-c"># scalar</span>
+            <span class="syn-s">"mel_loss"</span>:     Tensor,  <span class="syn-c"># scalar</span>
+            <span class="syn-s">"stft_loss"</span>:    Tensor,  <span class="syn-c"># scalar</span>
+            <span class="syn-s">"vq_loss"</span>:      Tensor,  <span class="syn-c"># scalar</span>
+            <span class="syn-s">"semantic_loss"</span>: Tensor,  <span class="syn-c"># scalar</span>
+        }
+
+    <span class="syn-c"># Inference: waveform → discrete codes</span>
+    <span class="syn-k">def</span> <span class="syn-f">encode</span>(
+        waveform: Tensor,          <span class="syn-c"># (B, 1, T)</span>
+        script_ids: Optional[Tensor] = None
+    ) -> Tensor:                  <span class="syn-c"># (B, T/240, N_cb) int64</span>
+
+    <span class="syn-c"># Inference: discrete codes → waveform</span>
+    <span class="syn-k">def</span> <span class="syn-f">decode</span>(codes: Tensor) -> Tensor:  <span class="syn-c"># (B, T/240, N_cb) → (B, 1, T)</span>
+
+    <span class="syn-c"># Properties</span>
+    <span class="syn-n">frame_rate</span>: <span class="syn-k">float</span>              <span class="syn-c"># 100.0 Hz</span>
+    <span class="syn-n">num_parameters</span>(exclude_teacher: bool = True) -> <span class="syn-k">int</span></pre>
+                </div>
+            </div>
+        </div>
+        <div id="content2" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">tokenizer.py — Configuration Dataclasses</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-k">@dataclass</span>
+<span class="syn-k">class</span> <span class="syn-n">AudioConfig</span>:
+    sample_rate: <span class="syn-k">int</span> = <span class="syn-v">24_000</span>
+    n_fft:       <span class="syn-k">int</span> = <span class="syn-v">2048</span>
+    hop_length:  <span class="syn-k">int</span> = <span class="syn-v">240</span>
+    n_mels:      <span class="syn-k">int</span> = <span class="syn-v">128</span>
+    fmin:        <span class="syn-k">float</span> = <span class="syn-v">0.0</span>
+    fmax:        <span class="syn-k">float</span> = <span class="syn-v">12_000.0</span>
+
+<span class="syn-k">@dataclass</span>
+<span class="syn-k">class</span> <span class="syn-n">RVQConfig</span>:
+    n_codebooks:              <span class="syn-k">int</span> = <span class="syn-v">8</span>
+    codebook_size:            <span class="syn-k">int</span> = <span class="syn-v">1024</span>
+    codebook_dim:             <span class="syn-k">int</span> = <span class="syn-v">128</span>
+    commitment_cost:          <span class="syn-k">float</span> = <span class="syn-v">1.0</span>
+    ema_decay:                <span class="syn-k">float</span> = <span class="syn-v">0.99</span>
+    ema_epsilon:              <span class="syn-k">float</span> = <span class="syn-v">1e-5</span>
+    threshold_ema_dead_code:  <span class="syn-k">float</span> = <span class="syn-v">1.0</span>
+
+<span class="syn-k">@dataclass</span>
+<span class="syn-k">class</span> <span class="syn-n">ModelConfig</span>:
+    encoder_channels: <span class="syn-k">int</span> = <span class="syn-v">512</span>
+    decoder_channels: <span class="syn-k">int</span> = <span class="syn-v">512</span>
+    n_script_families: <span class="syn-k">int</span> = <span class="syn-v">12</span>
+    script_embed_dim: <span class="syn-k">int</span> = <span class="syn-v">64</span>
+    w2v_bert_model: <span class="syn-k">str</span> = <span class="syn-s">"facebook/w2v-bert-2.0"</span>
+    w2v_bert_dim: <span class="syn-k">int</span> = <span class="syn-v">1024</span>
+    semantic_proj_dim: <span class="syn-k">int</span> = <span class="syn-v">256</span></pre>
+                </div>
+            </div>
+        </div>
+        <div id="content3" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">tokenizer.py — Training Entry Point</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-k">from</span> tokenizer <span class="syn-k">import</span> train, AudioConfig, RVQConfig, ModelConfig, TrainingConfig
+
+<span class="syn-c"># Configure</span>
+audio_cfg = AudioConfig()
+rvq_cfg   = RVQConfig(n_codebooks=<span class="syn-v">8</span>, codebook_size=<span class="syn-v">1024</span>)
+model_cfg = ModelConfig(encoder_channels=<span class="syn-v">512</span>)
+train_cfg = TrainingConfig(
+    data_dir=<span class="syn-s">"./data"</span>,
+    batch_size=<span class="syn-v">8</span>,
+    num_epochs=<span class="syn-v">200</span>,
+    device=<span class="syn-s">"auto"</span>,
+)
+
+<span class="syn-c"># Launch (rank=0, world_size=1 for single-GPU/CPU)</span>
+train(<span class="syn-v">0</span>, <span class="syn-v">1</span>, audio_cfg, rvq_cfg, model_cfg, train_cfg)
+
+<span class="syn-c"># Or via CLI:</span>
+<span class="syn-c"># python tokenizer.py train --preset auto --data-dir ./data --epochs 200</span></pre>
+                </div>
+            </div>
+        </div>
+        <div id="content4" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">Inference Utilities</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-k">from</span> tokenizer <span class="syn-k">import</span> (
+    _load_model_from_checkpoint,
+    encode_audio_file,
+    decode_codes_to_file,
+    get_device,
+)
+
+<span class="syn-c"># Load trained model</span>
+model = _load_model_from_checkpoint(
+    <span class="syn-s">"./checkpoints/ckpt_step00005000.pt"</span>,
+    device=<span class="syn-s">"auto"</span>
+)
+
+<span class="syn-c"># Encode audio file → tokens</span>
+codes = encode_audio_file(
+    model, <span class="syn-s">"speech.wav"</span>, lang=<span class="syn-s">"hi"</span>
+)  <span class="syn-c"># → (1, T/240, 8)</span>
+
+<span class="syn-c"># Decode tokens → audio file</span>
+decode_codes_to_file(
+    model, codes, <span class="syn-s">"output.wav"</span>
+)
+
+<span class="syn-c"># Export to TorchScript</span>
+<span class="syn-k">from</span> tokenizer <span class="syn-k">import</span> export_torchscript
+export_torchscript(model, <span class="syn-s">"lipika.pt"</span>)</pre>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
 <div class="section-divider"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!-- LOSSES                                                                -->
+<!-- QUICK START                                                           -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<section class="section" id="losses">
-    <div class="section-label">Loss Functions</div>
-    <h2 class="section-title">Mathematical definitions.</h2>
+<section class="section" id="quickstart">
+    <div class="section-label">Quick Start</div>
+    <h2 class="section-title">Deploy in five minutes.</h2>
+
+    <div class="tabs">
+        <input type="radio" id="qtab1" name="qtabs" class="tab-radio" checked>
+        <input type="radio" id="qtab2" name="qtabs" class="tab-radio">
+        <input type="radio" id="qtab3" name="qtabs" class="tab-radio">
+        <div class="tab-nav">
+            <label for="qtab1">Installation</label>
+            <label for="qtab2">Data Preparation</label>
+            <label for="qtab3">Training Commands</label>
+        </div>
+        <div id="qcontent1" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">Terminal — Installation</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-c"># Core: PyTorch + audio processing</span>
+pip install torch torchvision torchaudio soundfile librosa
+
+<span class="syn-c"># Training: monitoring + progress bars</span>
+pip install numpy tqdm tensorboard
+
+<span class="syn-c"># Optional: W2V-BERT semantic teacher</span>
+pip install transformers
+
+<span class="syn-c"># Optional: training plots</span>
+pip install matplotlib
+
+<span class="syn-c"># Optional: configuration management</span>
+pip install einops omegaconf</pre>
+                </div>
+            </div>
+        </div>
+        <div id="qcontent2" class="tab-content">
+            <p class="section-desc">
+                Place audio files in the data directory with optional language metadata.
+                Supported formats: WAV, FLAC, OGG, MP3, Opus.
+            </p>
+            <div class="file-tree">
+                <div class="dir">data/</div>
+                <div style="padding-left:20px;">
+                    <div class="file">speaker001_utt001.wav</div>
+                    <div class="file">speaker001_utt001.json  <span class="comment"># {"lang": "hi"}</span></div>
+                    <div class="file">speaker001_utt002.wav</div>
+                    <div class="file">speaker001_utt002.json  <span class="comment"># {"lang": "hi"}</span></div>
+                    <div class="file">speaker002_utt001.wav</div>
+                    <div class="file">speaker002_utt001.json  <span class="comment"># {"lang": "ta"}</span></div>
+                    <div class="file">...</div>
+                </div>
+            </div>
+        </div>
+        <div id="qcontent3" class="tab-content">
+            <div class="code-block">
+                <div class="code-header">
+                    <div class="code-dot cd1"></div><div class="code-dot cd2"></div><div class="code-dot cd3"></div>
+                    <div class="code-fname">Terminal — Training</div>
+                </div>
+                <div class="code-body">
+<pre><span class="syn-c"># Smoke test — verify forward pass on your hardware</span>
+python tokenizer.py smoke-test
+
+<span class="syn-c"># Auto-detect hardware and start training</span>
+python tokenizer.py train --preset auto --data-dir ./data
+
+<span class="syn-c"># CPU-only (4-core AMD, your system)</span>
+python tokenizer.py train --preset cpu --device cpu --epochs 10
+
+<span class="syn-c"># With W2V-BERT semantic distillation (needs ~2 GB extra VRAM)</span>
+python tokenizer.py train --preset gpu-full --device cuda
+
+<span class="syn-c"># Without semantic teacher (faster, less memory)</span>
+python tokenizer.py train --preset gpu-full --no-semantic
+
+<span class="syn-c"># Resume from checkpoint</span>
+python tokenizer.py train --resume ./checkpoints/ckpt_step00005000.pt
+
+<span class="syn-c"># Monitor training</span>
+tensorboard --logdir ./logs</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- GLOSSARY                                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="glossary">
+    <div class="section-label">Glossary</div>
+    <h2 class="section-title">Key terms and definitions.</h2>
+
+    <div class="def-list">
+        <div class="def-item">
+            <div class="def-term">AdaLN</div>
+            <div class="def-desc">Adaptive Layer Normalisation. A conditioning mechanism where an external signal (here, script identity) predicts per-channel scale (&gamma;) and shift (&beta;) parameters that modulate the normalised activations: y = &gamma;(c) &middot; LayerNorm(z) + &beta;(c).</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Codebook Collapse</div>
+            <div class="def-desc">A failure mode in vector quantisation where only a fraction of codebook entries receive gradient updates, causing the effective codebook size to shrink. Mitigated by EMA updates and dead-code recycling.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Commitment Loss</div>
+            <div class="def-desc">The MSE between the encoder output z<sub>e</sub> and the quantised vector z<sub>q</sub> (with z<sub>q</sub> detached). Encourages the encoder to commit to the codebook's discretisation.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Compression Ratio</div>
+            <div class="def-desc">The factor by which temporal resolution is reduced. Lipika's encoder converts 24,000 samples per second to 100 latent frames per second: 24,000 / 100 = 240&times;.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">EMA Update</div>
+            <div class="def-desc">Exponential Moving Average update for codebook entries. Instead of gradient descent, codebook vectors are updated as: e := &alpha;&middot;e + (1-&alpha;)&middot;mean(assigned_z), with &alpha;=0.99. More stable than gradient-based updates.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Feature Matching Loss</div>
+            <div class="def-desc">L1 distance between discriminator intermediate feature maps for real and generated audio. Encourages the generator to produce outputs with similar internal representations to real data.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Frame Rate</div>
+            <div class="def-desc">The number of latent frames (and thus token vectors) per second of audio. Lipika: 100 Hz = one token every 10 milliseconds.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Gated ResBlock</div>
+            <div class="def-desc">A residual block where the main path's output is gated (element-wise multiplied) with a learned gate before being added to the skip connection. Smooths gradient flow.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Hinge Loss</div>
+            <div class="def-desc">A GAN objective: Discriminator minimises ReLU(1-D(x)) + ReLU(1+D(G(z))). Generator minimises -D(G(z)). More stable than the original cross-entropy GAN loss.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">MPD</div>
+            <div class="def-desc">Multi-Period Discriminator. Sub-discriminators operating on different periodic subsamplings of the waveform (periods: 2, 3, 5, 7, 11). Captures prosodic and rhythmic patterns.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">MSD</div>
+            <div class="def-desc">Multi-Scale Discriminator. Sub-discriminators operating on the waveform at different temporal resolutions (original, &times;2 pooled, &times;4 pooled). Captures spectral and long-range patterns.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Retroflex Consonant</div>
+            <div class="def-desc">A consonant articulated with the tongue tip curled back toward the hard palate. Phonemically contrastive in most Indic languages. IPA symbols: /&#7789; &#7693; &#7751; &#637; &#642;/.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">RVQ</div>
+            <div class="def-desc">Residual Vector Quantisation. A cascade of VQ layers where each layer quantises the residual error of the previous layer. Allows coarse-to-fine discretisation with additive reconstruction.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Semantic Distillation</div>
+            <div class="def-desc">Training the first RVQ codebook to predict frozen W2V-BERT hidden states. Ensures the coarsest tokens capture phonetic identity rather than low-level acoustic texture.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Spectral Normalisation</div>
+            <div class="def-desc">A weight normalisation technique that constrains the Lipschitz constant of each discriminator layer by dividing weights by their spectral norm. Stabilises GAN training.</div>
+        </div>
+        <div class="def-item">
+            <div class="def-term">Straight-Through Estimator</div>
+            <div class="def-desc">During backpropagation through the quantisation step, the gradient is passed through unchanged: z_output = z_input + stop_gradient(z_quantised - z_input). The forward pass uses z_quantised but the backward pass flows through z_input.</div>
+        </div>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- REFERENCES                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="references">
+    <div class="section-label">References</div>
+    <h2 class="section-title">Grounded in the literature.</h2>
 
     <div class="table-wrap">
         <table>
-            <thead><tr><th>Function</th><th>Definition</th></tr></thead>
+            <thead><tr><th>#</th><th>Paper</th><th>Year</th><th>Contribution to Lipika</th></tr></thead>
             <tbody>
-                <tr><td><strong>Mel L1</strong></td><td>&Vert; log(1 + mel(&xcirc;)) &minus; log(1 + mel(x)) &Vert;<sub>1</sub></td></tr>
-                <tr><td><strong>MS-STFT</strong></td><td>&Sigma;<sub>n</sub> ( &Vert;S<sub>n</sub> &minus; &Scirc;<sub>n</sub>&Vert;<sub>F</sub> / &Vert;S<sub>n</sub>&Vert;<sub>F</sub> + &Vert; log &Scirc;<sub>n</sub> &minus; log S<sub>n</sub> &Vert;<sub>1</sub> ) / 4</td></tr>
-                <tr><td><strong>Hinge D</strong></td><td>E[ReLU(1 &minus; D(x))] + E[ReLU(1 + D(&xcirc;))]</td></tr>
-                <tr><td><strong>Hinge G</strong></td><td>&minus;E[D(&xcirc;)]</td></tr>
-                <tr><td><strong>Feature Match</strong></td><td>&Sigma;<sub>l</sub> &Vert; D<sub>l</sub>(x) &minus; D<sub>l</sub>(&xcirc;) &Vert;<sub>1</sub></td></tr>
-                <tr><td><strong>VQ Commit</strong></td><td>&Vert; z<sub>q</sub><sup>detach</sup> &minus; z<sub>e</sub> &Vert;<sub>2</sub><sup>2</sup></td></tr>
+                <tr><td>[1]</td><td><strong>EnCodec</strong> — Défossez et al.</td><td>2022</td><td>Core encoder/decoder/RVQ architecture, causal convolutions, hinge GAN loss</td></tr>
+                <tr><td>[2]</td><td><strong>SoundStream</strong> — Zeghidour et al.</td><td>2021</td><td>Residual vector quantiser design, multi-codebook structure</td></tr>
+                <tr><td>[3]</td><td><strong>VQ-VAE</strong> — van den Oord et al.</td><td>2017</td><td>Straight-through gradient estimator, commitment loss formulation</td></tr>
+                <tr><td>[4]</td><td><strong>VALL-E</strong> — Wang et al.</td><td>2023</td><td>Motivation for discrete audio tokens as language model targets for TTS</td></tr>
+                <tr><td>[5]</td><td><strong>data2vec</strong> — Baevski et al.</td><td>2022</td><td>W2V-BERT as semantic feature extractor for distillation target</td></tr>
+                <tr><td>[6]</td><td><strong>W2V-BERT</strong> — Chung et al.</td><td>2021</td><td>Contrastive + MLM pre-training for self-supervised speech representations</td></tr>
+                <tr><td>[7]</td><td><strong>MelGAN</strong> — Kumar et al.</td><td>2019</td><td>Multi-scale discriminator architecture</td></tr>
+                <tr><td>[8]</td><td><strong>HiFi-GAN</strong> — Kong et al.</td><td>2020</td><td>Multi-period discriminator, feature matching loss</td></tr>
+                <tr><td>[9]</td><td><strong>WGAN-GP</strong> — Gulrajani et al.</td><td>2017</td><td>Theoretical grounding for GAN stability improvements</td></tr>
+                <tr><td>[10]</td><td><strong>Spectral Normalisation</strong> — Miyato et al.</td><td>2018</td><td>Weight normalisation for Lipschitz-constrained discriminators</td></tr>
+                <tr><td>[11]</td><td><strong>VITS</strong> — Kim et al.</td><td>2021</td><td>Multi-scale STFT loss for perceptually motivated training</td></tr>
+                <tr><td>[12]</td><td><strong>Layer Normalisation</strong> — Ba et al.</td><td>2016</td><td>AdaLN formulation for script conditioning</td></tr>
+                <tr><td>[13]</td><td><strong>Vocos</strong> — Siuzdak</td><td>2023</td><td>Frequency-domain reconstruction paradigm</td></tr>
+                <tr><td>[14]</td><td><strong>AudioCraft</strong> — Défossez et al.</td><td>2023</td><td>EMA codebook update methodology</td></tr>
+                <tr><td>[15]</td><td><strong>Codebook Collapse</strong> — Zeyer et al.</td><td>2023</td><td>Dead-code recycling strategy for VQ training stability</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- CONFIGURATION REFERENCE                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<section class="section" id="config-reference">
+    <div class="section-label">Configuration Reference</div>
+    <h2 class="section-title">Every hyperparameter, explained.</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Parameter</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>sample_rate</code></td><td>24000</td><td>Audio sample rate in Hz. 24 kHz captures energy up to Nyquist 12 kHz — sufficient for all Indic phonemes including high-frequency sibilants.</td></tr>
+                <tr><td><code>n_fft</code></td><td>2048</td><td>FFT window size for STFT computations. 2048 samples = 85.3 ms at 24 kHz.</td></tr>
+                <tr><td><code>hop_length</code></td><td>240</td><td>Hop length between STFT frames. 240 samples = 10 ms at 24 kHz — aligns with latent frame rate.</td></tr>
+                <tr><td><code>n_mels</code></td><td>128</td><td>Number of mel filterbank bins for mel-spectrogram loss.</td></tr>
+                <tr><td><code>fmax</code></td><td>12000</td><td>Maximum frequency for mel filterbank. Nyquist at 24 kHz.</td></tr>
+                <tr><td><code>encoder_channels</code></td><td>512</td><td>Number of channels throughout encoder. Constant across all encoder blocks.</td></tr>
+                <tr><td><code>n_codebooks</code></td><td>8</td><td>Number of residual VQ layers. First layer captures semantics; subsequent layers refine acoustic detail.</td></tr>
+                <tr><td><code>codebook_size</code></td><td>1024</td><td>Number of entries per codebook. 1024 entries = 10-bit index per codebook.</td></tr>
+                <tr><td><code>codebook_dim</code></td><td>128</td><td>Dimensionality of each codebook entry. Shared across all codebooks.</td></tr>
+                <tr><td><code>commitment_cost</code></td><td>1.0</td><td>Weight &beta; on the VQ commitment loss. Higher values push the encoder harder toward codebook entries.</td></tr>
+                <tr><td><code>ema_decay</code></td><td>0.99</td><td>Decay factor &alpha; for EMA codebook updates. Higher = slower adaptation, more stability.</td></tr>
+                <tr><td><code>threshold_ema_dead_code</code></td><td>1.0</td><td>Minimum usage count before a code is considered dead and re-initialised. Lower = more aggressive recycling.</td></tr>
+                <tr><td><code>disc_start_step</code></td><td>10000</td><td>Global step at which GAN training activates. Before this, only reconstruction losses are active.</td></tr>
+                <tr><td><code>w_time_recon</code></td><td>0.1</td><td>Weight on time-domain L1 waveform loss.</td></tr>
+                <tr><td><code>w_mel</code></td><td>1.0</td><td>Weight on mel-spectrogram L1 loss.</td></tr>
+                <tr><td><code>w_freq_recon</code></td><td>1.0</td><td>Weight on multi-scale STFT loss.</td></tr>
+                <tr><td><code>w_vq</code></td><td>1.0</td><td>Weight on VQ commitment loss.</td></tr>
+                <tr><td><code>w_semantic</code></td><td>10.0</td><td>Weight on W2V-BERT semantic distillation loss. High weight ensures phonetic grounding.</td></tr>
+                <tr><td><code>w_gen</code></td><td>3.0</td><td>Weight on hinge generator adversarial loss.</td></tr>
+                <tr><td><code>w_feat</code></td><td>3.0</td><td>Weight on feature matching loss.</td></tr>
             </tbody>
         </table>
     </div>
@@ -806,18 +1587,44 @@ python tokenizer.py decode codes.pt \
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- FOOTER                                                                -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
-<footer>
-    <div class="footer-inner">
-        <div>Lipika Tokenizer &middot; v1.0</div>
-        <div class="footer-links">
-            <a href="#why">Why</a>
-            <a href="#architecture">Architecture</a>
-            <a href="#innovation">Innovation</a>
-            <a href="#quickstart">Quick Start</a>
+<div class="footer">
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h5>Lipika Tokenizer</h5>
+            <p style="color:var(--text-tertiary);font-size:0.82rem;margin-top:4px;">
+                Production-grade neural audio codec for Indic text-to-speech synthesis.
+                Built on PyTorch with multi-backend support.
+            </p>
         </div>
-        <div>CUDA &middot; MPS &middot; CPU</div>
+        <div class="footer-col">
+            <h5>Navigation</h5>
+            <a href="#abstract">Abstract</a>
+            <a href="#motivation">Motivation</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#innovation">Innovations</a>
+            <a href="#glossary">Glossary</a>
+        </div>
+        <div class="footer-col">
+            <h5>Resources</h5>
+            <a href="#quickstart">Quick Start</a>
+            <a href="#api">API Reference</a>
+            <a href="#training">Training Guide</a>
+            <a href="#config-reference">Config Reference</a>
+            <a href="#references">References</a>
+        </div>
+        <div class="footer-col">
+            <h5>Links</h5>
+            <a href="https://github.com" target="_blank" rel="noopener">GitHub Repository</a>
+            <a href="https://arxiv.org/abs/2210.13438" target="_blank" rel="noopener">EnCodec Paper</a>
+            <a href="https://arxiv.org/abs/2107.03312" target="_blank" rel="noopener">SoundStream Paper</a>
+            <a href="https://arxiv.org/abs/2301.02111" target="_blank" rel="noopener">VALL-E Paper</a>
+        </div>
     </div>
-</footer>
+    <div class="footer-bottom">
+        <div>Lipika &middot; v1.0 &middot; CUDA / Apple MPS / CPU</div>
+        <div>12 Script Families &middot; 240&times; Compression &middot; 100 Hz Frame Rate</div>
+    </div>
+</div>
 
 <script>
     document.querySelectorAll('a[href^="#"]').forEach(link => {
@@ -827,7 +1634,7 @@ python tokenizer.py decode codes.pt \
             e.preventDefault();
             const target = document.querySelector(href);
             if (target) {
-                const offset = 72;
+                const offset = 68;
                 const position = target.getBoundingClientRect().top + window.scrollY - offset;
                 window.scrollTo({ top: position, behavior: 'smooth' });
             }
