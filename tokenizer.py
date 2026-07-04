@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # =============================================================================
-# LIPIKA TOKENIZER  -Neural Audio Codec for Indic TTS
+# LIPIKA TOKENIZER  - Neural Audio Codec for Indic TTS
 # =============================================================================
 
 from __future__ import annotations
